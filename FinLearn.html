@@ -1,0 +1,844 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head><body><div id="root"></div>
+<script>
+// FinLearn data
+window.__FL_QUESTIONS = {
+  bonds:[
+    {q:"Un'obbligazione con original maturity di 9 mesi è classificata come:",opts:["Money market security","Capital market security","Perpetual bond"],ans:0,exp:"Bonds con original maturity di 1 anno o meno sono money market securities.",time:30,diff:1},
+    {q:"La relazione prezzo-yield per bond a cedola fissa è:",opts:["Positiva","Inversa","Nessuna relazione"],ans:1,exp:"Prezzi e yields hanno relazione INVERSA. Tassi salgono, prezzi scendono.",time:25,diff:1},
+    {q:"YTM rappresenta:",opts:["Solo interessi annuali","Rendimento totale se detenuto a scadenza","Il prezzo attuale del bond"],ans:1,exp:"YTM = tasso che eguaglia PV di tutti i flussi al prezzo corrente.",time:30,diff:1},
+    {q:"Se ModD = 6 e yield +0.5%, price change è circa:",opts:["-3%","+3%","-6%"],ans:0,exp:"%Delta P circa -ModD × Delta y = -6 × 0.005 = -3%",time:40,diff:2},
+    {q:"Premium bond: ordine corretto delle misure di rendimento?",opts:["Coupon maggiore CY maggiore YTM","YTM maggiore CY maggiore Coupon","Tutti uguali"],ans:0,exp:"Premium (P maggiore Par): Coupon maggiore Current Yield maggiore YTM.",time:40,diff:2},
+    {q:"BEY di un bond con YTM semi 2.5%:",opts:["2.5%","5.0%","5.0625%"],ans:1,exp:"BEY = 2 × semi YTM = 5.0%.",time:30,diff:2},
+    {q:"OAS è calcolato come:",opts:["Z-Spread + Option Value","Z-Spread - Option Value","G-Spread × Duration"],ans:1,exp:"OAS = Z-Spread - Option Value. Rimuove il valore dell'opzione.",time:40,diff:3},
+    {q:"Duration di un zero-coupon bond è:",opts:["Zero","Uguale alla maturity","Metà della maturity"],ans:1,exp:"ZCB: unico cash flow alla scadenza, quindi MacD = Maturity.",time:25,diff:2},
+  ],
+  stocks:[
+    {q:"Un'azione rappresenta:",opts:["Un debito verso di te","Una quota di proprietà","Un prestito all'azienda"],ans:1,exp:"Azione = EQUITY = quota di proprietà dell'azienda.",time:25,diff:1},
+    {q:"Se EPS = 2 e P/E = 15, il prezzo dell'azione è:",opts:["30 euro","7.50 euro","17 euro"],ans:0,exp:"Price = P/E × EPS = 15 × 2 = 30.",time:30,diff:1},
+    {q:"P/E alto suggerisce:",opts:["Sottovalutazione","Sopravvalutazione o alte aspettative di crescita","Azienda in perdita"],ans:1,exp:"P/E alto = paghi di più per 1 euro di utili. Potenzialmente costosa o high-growth.",time:30,diff:1},
+    {q:"ROE 15% significa:",opts:["15% ritorno sul debito totale","15% ritorno sull'equity","15% di dividendi distribuiti"],ans:1,exp:"ROE = Net Income / Equity. Misura l'efficienza del capitale proprio.",time:25,diff:1},
+    {q:"Beta maggiore di 1 indica:",opts:["Meno volatile del mercato","Più volatile del mercato","Non correlato al mercato"],ans:1,exp:"Beta 1.5 = 50% più volatile del mercato. Amplifica i movimenti.",time:25,diff:1},
+    {q:"Enterprise Value include:",opts:["Solo Market Cap","Market Cap + Debito - Cash","Solo il debito netto"],ans:1,exp:"EV = costo totale per acquisire l'intera azienda: MC + Debt - Cash.",time:30,diff:2},
+  ],
+  cfa_fi:[
+    {q:"Macaulay Duration misura:",opts:["Tempo medio ponderato dei CF","Variazione % del prezzo","Convexity del bond"],ans:0,exp:"MacD = Somma(t × PV(CFt)) / P. Si esprime in anni.",time:30,diff:2},
+    {q:"Modified Duration = MacD / (1+y/m) misura:",opts:["Tempo medio dei CF","Sensibilità % del prezzo al yield","Convexity"],ans:1,exp:"ModD: variazione % prezzo per 1% cambio yield.",time:35,diff:2},
+    {q:"Forward rate f(1,1) si calcola come:",opts:["(1+S2)^2 / (1+S1) - 1","S2 - S1","(S1 + S2)/2"],ans:0,exp:"No-arbitrage: (1+S1)(1+f1,1) = (1+S2)^2. Quindi f = (1+S2)^2/(1+S1) - 1.",time:45,diff:3},
+    {q:"Effective duration è usata principalmente per:",opts:["Solo government bonds","Bond con opzioni embedded","Solo zero-coupon bond"],ans:1,exp:"Effective duration per callable, putable, MBS — bond con opzioni.",time:35,diff:2},
+  ],
+  derivatives:[
+    {q:"Call option dà il diritto di:",opts:["Vendere l'underlying","Comprare l'underlying","Scambiare cash flows"],ans:1,exp:"Call = diritto di COMPRARE. Put = diritto di VENDERE.",time:20,diff:1},
+    {q:"Payoff di una call a scadenza:",opts:["max(0, S-K)","max(0, K-S)","S-K sempre"],ans:0,exp:"Call payoff = max(0, S-K). Eserciti solo se prezzo è maggiore dello strike.",time:30,diff:1},
+    {q:"Put-Call Parity per European options:",opts:["C + PV(K) = P + S","C + K = P + S","C - P = S - K"],ans:0,exp:"C + PV(K) = P + S. Relazione fondamentale no-arbitrage.",time:40,diff:3},
+    {q:"Delta di una call option è:",opts:["Sempre negativo","Tra 0 e 1","Sempre maggiore di 1"],ans:1,exp:"Call delta: tra 0 e 1. Misura la sensibilità al prezzo del sottostante.",time:35,diff:3},
+    {q:"In un interest rate swap, il fixed-rate payer:",opts:["Paga fisso, riceve floating","Paga floating, riceve fisso","Paga entrambi i tassi"],ans:0,exp:"Fixed-rate payer: paga tasso fisso, riceve tasso variabile (es. Euribor).",time:30,diff:2},
+  ],
+  alt:[
+    {q:"Quale caratteristica NON è tipica degli investimenti alternativi?",opts:["Bassa liquidità","Alta trasparenza e disclosure","Struttura LP/GP","Fee elevate"],ans:1,exp:"Gli alternativi hanno BASSA trasparenza: poca disclosure, strategie complesse, pricing infrequente.",time:30,diff:1},
+    {q:"Nel distribution waterfall, qual è l'ordine corretto?",opts:["Carry → Hurdle → Return of capital","Return of capital → Preferred return → Catch-up → Carry","Preferred return → Return of capital → Carry","Carry → Return of capital → Hurdle"],ans:1,exp:"Ordine: 1) Return of capital 2) Preferred return 3) Catch-up GP 4) Carried interest split.",time:35,diff:2},
+    {q:"Il clawback provision obbliga:",opts:["LP a versare capitale aggiuntivo","GP a restituire excess carry agli LP","Il fondo a rimborsare le management fee","LP a estendere il lock-up"],ans:1,exp:"Clawback: il GP restituisce agli LP il carried interest in eccesso se successive perdite erodono i guadagni.",time:30,diff:2},
+    {q:"Un LBO ideale ha come target un'azienda con:",opts:["Alta volatilità e molto capex","Cash flow stabili, basso capex, forte posizione di mercato","Molti intangibili e nessun debito","Alta crescita ma nessun utile"],ans:1,exp:"LBO target: cash flow prevedibili per servire il debito, basso capex, collaterale tangibile, moat competitivo.",time:35,diff:2},
+    {q:"Il mezzanine debt:",opts:["È equity subordinato","È debito con equity kicker (warrant)","Ha priorità sui senior loans","Non paga interessi"],ans:1,exp:"Mezzanine = DEBITO subordinato con equity kicker (warrant). Ranking: senior → mezzanine → equity.",time:30,diff:2},
+    {q:"La Cap Rate in real estate è calcolata come:",opts:["Gross Rent / Property Value","NOI / Property Value","(NOI + Depreciation) / Price","Debt Service / NOI"],ans:1,exp:"Cap Rate = NOI / Property Value. Più alta = valutazione più bassa (come yield obbligazionario).",time:25,diff:1},
+    {q:"In un hedge fund, l'high-water mark (HWM):",opts:["Fissa il tasso minimo di rendimento","Impedisce al manager di applicare performance fee su gain già remunerati","Limita i riscatti degli investitori","Determina il lock-up period"],ans:1,exp:"HWM: fee di performance solo su nuovi profitti sopra il picco NAV precedente. Protegge gli investitori.",time:30,diff:2},
+    {q:"Il roll return su futures è POSITIVO quando il mercato è in:",opts:["Contango","Backwardation","Condizioni normali","Nessuna delle precedenti"],ans:1,exp:"Backwardation: futures minore spot → compri basso e vendi alto al roll → roll return positivo.",time:30,diff:2},
+    {q:"Il MOIC di un fondo PE è 2.5x. Questo significa:",opts:["IRR del 25%","Il fondo ha restituito 2.5 volte il capitale investito","Il fondo ha perso il 60%","DPI = 2.5x necessariamente"],ans:1,exp:"MOIC = Total Value / Paid-In Capital. 2.5x = per ogni 1 euro investito, hai ricevuto 2.50 euro totali.",time:30,diff:2},
+    {q:"L'effetto J-Curve nei fondi PE indica:",opts:["IRR positivo crescente fin dall'anno 1","IRR negativo nei primi anni poi crescente","Ritorno costante durante la vita del fondo","Distribuzione uniforme dei capital call"],ans:1,exp:"J-Curve: anni 1-3 negativi (fee + investimenti immaturi), poi miglioramento con exit e rivalutazioni.",time:25,diff:1},
+    {q:"Lo survivorship bias nei database hedge fund:",opts:["Sottostima i rendimenti riportati","Sovrastima i rendimenti riportati rimuovendo i fondi falliti","Non ha effetto statistico","Riduce la volatilità misurata"],ans:1,exp:"Survivorship bias: i fondi falliti vengono rimossi dai database → rendimenti medi SOVRASTIMATI.",time:30,diff:2},
+    {q:"Greenfield vs Brownfield infrastructure:",opts:["Greenfield = asset operativo; Brownfield = nuovo progetto","Greenfield = nuovo progetto (rischio costruzione); Brownfield = asset operativo","Sono sinonimi","Brownfield ha sempre IRR maggiore"],ans:1,exp:"Greenfield = costruzione da zero → rischio costruzione, IRR target più alto. Brownfield = già operativo → cash flow stabili.",time:30,diff:2},
+    {q:"Il DPI maggiore di 1.0 indica che:",opts:["Il fondo è ancora in perdita","Gli LP hanno ricevuto più del capitale versato","Il fondo non ha ancora distribuito nulla","RVPI = 0"],ans:1,exp:"DPI maggiore di 1.0 = il fondo ha già distribuito più del capitale investito. Misura il realized return.",time:25,diff:2},
+    {q:"Un REIT deve distribuire almeno:",opts:["50% del reddito imponibile","90% del reddito imponibile","100% dei cash flow","75% degli utili"],ans:1,exp:"US REITs: distribuzione almeno 90% del reddito imponibile. Pass-through tax = tassazione a livello investitore.",time:25,diff:1},
+    {q:"Il total return di una posizione in commodity futures include:",opts:["Solo spot return","Spot return + roll return","Spot return + roll return + collateral return","Solo roll return e collateral return"],ans:2,exp:"Total Return Futures = Spot Return + Roll Return + Collateral Return (rendimento del collaterale, es. T-bill).",time:35,diff:3},
+  ],
+};
+
+const QUESTIONS = window.__FL_QUESTIONS;
+window.__FL_TOPICS = {
+  alt_investments:{
+    id:'alt_investments', title:'Alternative Investments', icon:'🏙️', color:'#0d4f3c', colorLight:'#e6f4f1', time:'3.5 ore',
+    theory:[
+      {
+        title:"Cos'è un Investimento Alternativo?",
+        intro:"Gli investimenti alternativi sono asset class al di fuori di azioni quotate, obbligazioni e liquidità. Offrono diversificazione ma a prezzo di illiquidità, opacità e fee elevate.",
+        sections:[
+          {heading:"Caratteristiche principali", type:'list', items:["Bassa liquidità: lock-up period, impossibilità di rimborso rapido","Fee elevate: management fee (1-2%) + performance fee (20% dei profitti)","Bassa trasparenza: strategie complesse, pricing infrequente","Strutture giuridiche uniche: LP/GP, SPV, trust","Potenziale diversificazione: bassa correlazione con asset tradizionali (in teoria)"]},
+          {heading:"Le 5 macro-categorie CFA", type:'table', headers:["Categoria","Sub-tipi chiave","Investitori tipici"], rows:[["Private Equity","VC, Buyout, Growth","Pension fund, SWF, endowment"],["Private Debt","Direct lending, Mezzanine, Distressed","Istituzionali, UHNW"],["Real Assets","Real Estate, Infrastrutture, Commodities","Istituzionali, REIT"],["Hedge Funds","L/S Equity, Macro, Relative Value","HNW, istituzionali"],["Digital Assets","Crypto, token","In crescita"]]},
+          {heading:"Struttura LP/GP e distribution waterfall", type:'highlight', text:"Il GP gestisce il fondo e ha responsabilità illimitata. Gli LP sono investitori passivi.\n\nDistribution Waterfall (ordine FISSO):\n1) Return of capital (rimborso capitale)\n2) Preferred return / Hurdle (es. 8%)\n3) Catch-up (il GP recupera la sua quota)\n4) Carried interest (es. 80/20 LP/GP)\n\nClawback: il GP restituisce carry in eccesso agli LP se perdite successive erodono i guadagni."},
+        ]
+      },
+      {
+        title:"Private Equity: VC, LBO, Growth",
+        intro:"Il private equity investe in aziende non quotate. Ogni sotto-strategia ha diverso profilo rischio/rendimento e fase del ciclo aziendale target.",
+        sections:[
+          {heading:"Venture Capital per stage", type:'table', headers:["Stage","Descrizione","Rischio"], rows:[["Seed/Pre-seed","Concept, R&D, zero revenue","Massimo"],["Series A/B","Prodotto sviluppato, team in scaling","Molto alto"],["Series C+","Crescita rapida, path to profitability","Alto"],["Pre-IPO/Mezzanine","Bridge a IPO o acquisizione","Moderato"]]},
+          {heading:"LBO — come funziona", type:'concept', text:"Acquisizione con elevato debito (60-70% del prezzo). I cash flow del target servono il debito.\n\nFonti di rendimento:\n• Leverage effect: il debito amplifica i ritorni sull'equity\n• Miglioramenti operativi: margini, costi, ricavi\n• Multiple expansion: compri a EV/EBITDA basso, esci alto\n• Debt paydown: il free cash flow riduce il debito"},
+          {heading:"Exit strategies PE", type:'table', headers:["Exit","Descrizione","Pro/Contro"], rows:[["IPO","Quotazione in borsa","Valutazione max; costoso"],["M&A strategica","Vendita a operatore","Premio sinergie"],["Secondary buyout","Vendita ad altro PE","Veloce; segnala qualità?"],["Recap","Aggiunta debito + dividendo","Monetizza senza vendere"],["Write-off","Fallimento","Perdita totale"]]},
+        ]
+      },
+      {
+        title:"Real Assets: Real Estate, Infrastrutture, Commodities",
+        intro:"I real asset offrono protezione dall'inflazione, rendimento da reddito e diversificazione rispetto agli asset finanziari.",
+        sections:[
+          {heading:"Real Estate — formule chiave", type:'highlight', text:"NOI = Gross Potential Rent − Vacancy − Operating Expenses\n\nCap Rate = NOI / Property Value\nCap Rate alta = valutazione bassa (come yield su bond)\n\nProperty Value = NOI / Cap Rate\n\nGRM = Property Price / Gross Annual Rent"},
+          {heading:"Infrastrutture", type:'list', items:["Asset lives 20-50+ anni: perfetti per passività istituzionali a lungo termine","Revenue regolamentati o contrattualizzati: cash flow prevedibili e inflation-linked","Monopolio naturale: barriere all'ingresso altissime (concessioni, licenze gov.)","Greenfield = nuovo (rischio costruzione, IRR alto); Brownfield = operativo (cash flow stabili, rischio basso)"]},
+          {heading:"Commodities futures — total return", type:'concept', text:"Total Return = Spot Return + Roll Return + Collateral Return\n\nContango (futures maggiore spot) → Roll return NEGATIVO\nBackwardation (futures minore spot) → Roll return POSITIVO\n\nLa maggior parte dei mercati commodity è in contango nel lungo periodo."},
+        ]
+      },
+      {
+        title:"Hedge Funds: Strategie e Rischi",
+        intro:"Gli hedge fund usano leva, short selling, derivati e asset illiquidi per generare rendimenti assoluti indipendentemente dalla direzione del mercato.",
+        sections:[
+          {heading:"Principali strategie", type:'table', headers:["Strategia","Descrizione","Correlazione mercato"], rows:[["Long/Short Equity","Long sottovalutati + short sopravvalutati","Variabile"],["Equity Market Neutral","Beta circa 0, solo alpha","Bassa"],["Merger Arbitrage","Long target + short acquirer post-annuncio M&A","Bassa"],["Global Macro","Scommesse macro su FX, tassi, commodity","Alta"],["Managed Futures (CTA)","Trend-following sistematico su futures","Bassa/negativa"],["Distressed","Debito/equity di aziende in difficoltà","Bassa"]]},
+          {heading:"Fee structure e HWM", type:'highlight', text:"'2 and 20': 2% management fee sull'AUM + 20% performance fee sopra hurdle\n\nHigh-Water Mark (HWM): la performance fee si applica SOLO su nuovi profitti sopra il picco NAV precedente.\n\nEs: NAV 100 → cala a 80 → risale a 95 → NESSUNA fee fino a NAV superiore a 100"},
+          {heading:"Rischi chiave e bias", type:'list', items:["Survivorship bias: fondi falliti rimossi dai DB → rendimenti medi SOVRASTIMATI","Backfill bias: nuovi fondi aggiungono track record positivi passati → ulteriore sovrastima","Liquidity mismatch: lock-up + gate possono bloccare rimborsi in crisi","Manager/key person risk: concentrazione su un individuo"]},
+        ]
+      },
+      {
+        title:"Performance, Valutazione e Portfolio",
+        intro:"I fondi di private market usano metriche specifiche perché i cash flow irregolari rendono il TWR inutilizzabile. La valutazione degli asset illiquidi richiede stime periodiche.",
+        sections:[
+          {heading:"Metriche performance PE", type:'table', headers:["Metrica","Formula","Nota"], rows:[["IRR","NPV=0","Sensibile ai ritorni precoci; manipolabile"],["MOIC/TVPI","Total Value / Paid-In","Multiplo totale; ignora time value"],["DPI","Distribuzioni / Paid-In","Realized return; DPI maggiore di 1 = capitale restituito"],["RVPI","NAV residuo / Paid-In","Non realizzato; mark-to-model"],["TVPI","DPI + RVPI","Somma totale"]]},
+          {heading:"J-Curve effect", type:'highlight', text:"I fondi PE mostrano IRR negativo nei primi anni:\n• Anni 1-2: management fee caricate, capital call ma nessun exit\n• Anni 3-5: investimenti maturano, prime rivalutazioni\n• Anni 6-10: exit e distribuzioni, IRR cresce\n\nSomiglia a una J nel grafico dell'IRR cumulativo nel tempo."},
+          {heading:"Stale pricing — effetto sulle correlazioni", type:'concept', text:"I private asset vengono marcati raramente (trimestrale). Questo:\n• SOTTOSTIMA la volatilità misurata\n• SOTTOSTIMA la correlazione con mercati pubblici\n• GONFIA artificialmente Sharpe ratio e benefici di diversificazione in MPT\n\nAttenzione: la diversificazione è reale ma può essere sopravvalutata dai modelli."},
+        ]
+      },
+    ],
+    cards:[
+      {front:"Distribution Waterfall",back:"Ordine di distribuzione dei cash flow in un fondo PE/alt.",formula:"RC \\rightarrow Hurdle \\rightarrow Catch\\text{-}up \\rightarrow Carry",mnemonic:"Return Capital → Preferred → Catch-up → Carry (sempre!)"},
+      {front:"Cap Rate",back:"Misura di yield per real estate. Cap rate alta = valutazione bassa.",formula:"\\text{Cap Rate} = \\frac{NOI}{\\text{Property Value}}",mnemonic:"Cap Rate alta = Valore basso (come yield bond)"},
+      {front:"MOIC / TVPI",back:"Multiple of invested capital. TVPI = DPI + RVPI.",formula:"TVPI = \\frac{\\text{Cumulative Distributions + NAV}}{\\text{Paid-In Capital}}",mnemonic:"2.0x MOIC = hai raddoppiato"},
+      {front:"Commodity Futures Return",back:"Il total return di futures su commodity ha 3 componenti.",formula:"R_{tot} = R_{spot} + R_{roll} + R_{collateral}",mnemonic:"Backwardation = roll positivo / Contango = roll negativo"},
+      {front:"High-Water Mark",back:"Protegge gli investitori hedge fund: performance fee solo su NUOVI gain sopra il picco NAV.",formula:"PF = \\max(0,\\, NAV - HWM) \\times 20\\%",mnemonic:"Fee solo se superi il picco precedente"},
+      {front:"J-Curve PE",back:"IRR negativo nei primi anni del fondo PE (fee + investimenti immaturi), poi crescente con le exit.",formula:"IRR_{cum}: \\text{negativo anni 1-3} \\rightarrow \\text{positivo anni 5-10}",mnemonic:"Prima scende, poi sale — come una J"},
+    ],
+    formulas:{
+      "Real Estate":[
+        {name:"NOI",formula:"NOI = \\text{Gross Rent} - \\text{Vacancy} - \\text{OpEx}",desc:"Net Operating Income"},
+        {name:"Cap Rate",formula:"\\text{Cap Rate} = \\frac{NOI}{\\text{Property Value}}",desc:"Income yield"},
+        {name:"Property Value",formula:"V = \\frac{NOI}{\\text{Cap Rate}}",desc:"Dalla cap rate"},
+        {name:"GRM",formula:"GRM = \\frac{\\text{Property Price}}{\\text{Gross Annual Rent}}",desc:"Gross Rent Multiplier"},
+      ],
+      "Private Capital":[
+        {name:"TVPI",formula:"TVPI = DPI + RVPI",desc:"Total Value / Paid-In"},
+        {name:"DPI",formula:"DPI = \\frac{\\text{Distribuzioni cumulative}}{\\text{Paid-In Capital}}",desc:"Realized multiple"},
+        {name:"RVPI",formula:"RVPI = \\frac{\\text{NAV residuo}}{\\text{Paid-In Capital}}",desc:"Unrealized multiple"},
+        {name:"IRR",formula:"\\sum \\frac{CF_t}{(1+IRR)^t} = 0",desc:"Money-weighted return"},
+      ],
+      "Hedge Funds":[
+        {name:"Management Fee",formula:"MF = \\text{Fee Rate} \\times AUM",desc:"Annuale su AUM"},
+        {name:"Performance Fee",formula:"PF = 20\\% \\times \\max(R - \\text{Hurdle}, 0) \\times AUM",desc:"Con hurdle"},
+        {name:"Net Return",formula:"R_{net} = R_{gross} - MF - PF",desc:"Dopo tutte le fee"},
+      ],
+      "Commodities":[
+        {name:"Total Return Futures",formula:"R_{tot} = R_{spot} + R_{roll} + R_{coll}",desc:"3 componenti"},
+      ],
+    },
+    questions:(window.__FL_QUESTIONS||{})["alt"],
+  },
+  bonds:{
+    id:'bonds', title:'Obbligazioni', icon:'📊', color:'#f59e0b', colorLight:'#fef3c7', time:'45 min',
+    theory:[
+      {
+        title:"Cos'è un'obbligazione?",
+        intro:"Un bond è essenzialmente un prestito che TU fai all'emittente — sia esso uno Stato, un'azienda o un ente sovranazionale.",
+        sections:[
+          {heading:"Struttura base", type:'list', items:["Face Value (Valore nominale): il capitale rimborsato a scadenza","Coupon Rate: tasso d'interesse annuo sul nominale","Maturity: data di scadenza del prestito","YTM: rendimento totale se detenuto fino a scadenza"]},
+          {heading:"La regola aurea", type:'highlight', text:"Tassi di mercato salgono → Prezzi dei bond scendono\nTassi di mercato scendono → Prezzi dei bond salgono\n\nI vecchi bond con cedola bassa valgono meno quando i nuovi offrono di più — esattamente come un'offerta scaduta."},
+          {heading:"Tipi principali", type:'table', headers:["Tipo","Caratteristica","Rischio chiave"], rows:[["Zero-coupon","No cedole, emesso a sconto","Reinvestment risk=0"],["Callable","Emittente può richiamare","Call risk per investor"],["Floating rate","Cedola indicizzata a tasso","Basso duration risk"],["TIPS","Protetto dall'inflazione","Deflation floor garantito"]]},
+        ]
+      },
+      {
+        title:"Duration e Convexity",
+        intro:"La duration misura quanto è sensibile il prezzo di un bond ai movimenti dei tassi d'interesse. È la bussola del risk manager.",
+        sections:[
+          {heading:"Tipi di Duration", type:'list', items:["Macaulay Duration: tempo medio ponderato per ricevere i CF (in anni)","Modified Duration: variazione % del prezzo per +1% di yield","Effective Duration: per bond con opzioni embedded (callable, MBS)","Key Rate Duration: esposizione a uno specifico punto della curva"]},
+          {heading:"Regola pratica ModD", type:'highlight', text:"Se ModD = 7 e lo yield sale del +1%:\nPrezzo scende di circa -7%\n\nSe lo yield scende del -0.5%:\nPrezzo sale di circa +3.5%"},
+          {heading:"Convexity: il vantaggio nascosto", type:'concept', text:"La convexity corregge l'approssimazione lineare della duration. Per un option-free bond è sempre positiva — significa che il bond sale più di quanto scende per variazioni uguali dello yield. È il bonus del bondholder."},
+        ]
+      },
+    ],
+    cards:[
+      {front:"Cos'è un'obbligazione?",back:"Titolo di DEBITO: presti soldi, ricevi interessi + capitale",formula:"P = \\sum \\frac{CF_t}{(1+r)^t}",mnemonic:"Tu sei la banca!"},
+      {front:"Duration",back:"Sensibilità del prezzo ai tassi. ModD indica la var% del prezzo per 1% di delta y.",formula:"ModD = \\frac{MacD}{1 + y/m}",mnemonic:"ModD=7 → yield +1% = price -7%"},
+      {front:"Convexity",back:"Curvatura prezzo-yield. Sempre amica del bondholder per option-free bonds.",formula:"\\%\\Delta P \\approx -ModD \\cdot \\Delta y + \\frac{1}{2}Conv(\\Delta y)^2",mnemonic:"Curva = sempre meglio che linea"},
+      {front:"YTM vs Current Yield",back:"YTM = rendimento totale a scadenza. CY = cedola / prezzo. YTM include capital gain/loss.",formula:"CY = \\frac{\\text{Annual Coupon}}{\\text{Price}}",mnemonic:"YTM è l'IRR del bond"},
+    ],
+    formulas:{
+      "Valutazione":[
+        {name:"Bond Price",formula:"P = \\sum_{t=1}^{N} \\frac{C}{(1+r)^t} + \\frac{FV}{(1+r)^N}",desc:"PV di tutti i cash flows"},
+        {name:"Current Yield",formula:"CY = \\frac{\\text{Annual Coupon}}{\\text{Price}}",desc:"Rendimento semplice"},
+      ],
+      "Duration":[
+        {name:"Modified Duration",formula:"ModD = \\frac{MacD}{1 + y/m}",desc:"Sensibilità al tasso"},
+        {name:"Price Change",formula:"\\%\\Delta P \\approx -ModD \\times \\Delta y + \\frac{1}{2}Conv(\\Delta y)^2",desc:"Con convexity"},
+      ],
+      "Spreads":[
+        {name:"G-Spread",formula:"G = YTM_{bond} - YTM_{gov}",desc:"vs Government benchmark"},
+        {name:"Z-Spread",formula:"P = \\sum \\frac{CF_t}{(1+S_t+Z)^t}",desc:"Su spot rate curve"},
+        {name:"OAS",formula:"OAS = Z - \\text{Option Value}",desc:"Option-Adjusted Spread"},
+      ],
+    },
+    questions:(window.__FL_QUESTIONS||{})["bonds"],
+  },
+  stocks:{
+    id:'stocks', title:'Azioni', icon:'📈', color:'#10b981', colorLight:'#ecfdf5', time:'40 min',
+    theory:[
+      {
+        title:"Cos'è un'azione?",
+        intro:"Un'azione rappresenta una quota di proprietà di un'azienda. Comprare un'azione significa diventare socio — con tutti i diritti e rischi che ne derivano.",
+        sections:[
+          {heading:"Common vs Preferred", type:'table', headers:["Caratteristica","Common","Preferred"], rows:[["Diritto di voto","Sì","No"],["Dividendi","Variabili","Fissi, prioritari"],["Priorità fallimento","Ultima","Prima di common"],["Upside","Illimitato","Limitato al dividendo"]]},
+          {heading:"Come si guadagna", type:'list', items:["Capital Gain: vendi a prezzo superiore al costo","Dividendi: distribuzione periodica degli utili","Total Return = (P1 - P0 + Dividendi) / P0"]},
+          {heading:"Il rischio azionario", type:'highlight', text:"Il rischio azionario è composto da:\n• Rischio sistematico (mercato) → misurato dal Beta\n• Rischio specifico (azienda) → eliminabile con diversificazione\n\nSolo il rischio sistematico viene compensato dal mercato (CAPM)."},
+        ]
+      },
+      {
+        title:"Valutazione: come si prezza un'azione",
+        intro:"A differenza dei bond, le azioni non hanno cash flow certi. La valutazione richiede stime e modelli — ogni analista può arrivare a prezzi diversi.",
+        sections:[
+          {heading:"Multipli di mercato", type:'list', items:["P/E = Prezzo / EPS → quanto paghi per 1 euro di utili","P/B = Prezzo / Book Value → premium sull'equity contabile","EV/EBITDA → valuta l'azienda intera, indipendente dalla leva","PEG = P/E / Growth rate → aggiusta il P/E per la crescita"]},
+          {heading:"P/E: come interpretarlo", type:'highlight', text:"P/E 10x → economica o in declino?\nP/E 30x → cara o high-growth?\n\nCompara SEMPRE con i peers dello stesso settore e con la storia. Un P/E alto può essere giustificato da crescita futura attesa."},
+          {heading:"DDM — Dividend Discount Model", type:'concept', text:"V0 = D1 / (ke - g)\n\nFunziona bene per aziende mature con dividendi stabili (utility, REIT). Non adatto per growth company che non distribuiscono dividendi."},
+        ]
+      },
+    ],
+    cards:[
+      {front:"P/E Ratio",back:"Quanto paghi per 1 euro di utili. Confronta sempre con peers dello stesso settore.",formula:"P/E = \\frac{Price}{EPS}",mnemonic:"P/E 15 = paghi 15 euro per 1 euro utile"},
+      {front:"ROE",back:"Efficienza del capitale proprio. Misura quanto utile genera ogni 1 euro di equity.",formula:"ROE = \\frac{Net\\ Income}{Equity}",mnemonic:"15% = 15 euro utile per 100 euro equity"},
+      {front:"CAPM",back:"Modello di pricing del rischio sistematico. Beta misura l'esposizione al mercato.",formula:"E(R) = R_f + \\beta(E(R_m) - R_f)",mnemonic:"Beta maggiore di 1 = più volatile del mercato"},
+      {front:"PEG Ratio",back:"P/E aggiustato per la crescita. PEG minore di 1 = potenzialmente cheap.",formula:"PEG = \\frac{P/E}{g}",mnemonic:"Aggiusta il P/E per il growth"},
+    ],
+    formulas:{
+      "Ratios":[
+        {name:"P/E",formula:"P/E = \\frac{Price}{EPS}",desc:"Prezzo per 1 euro utili"},
+        {name:"PEG",formula:"PEG = \\frac{P/E}{g}",desc:"Aggiustato per crescita"},
+        {name:"EV/EBITDA",formula:"EV = MC + Debt - Cash",desc:"Enterprise valuation"},
+      ],
+      "Rendimenti":[
+        {name:"Total Return",formula:"R = \\frac{P_1 - P_0 + Div}{P_0}",desc:"Capital gain + dividendi"},
+        {name:"CAPM",formula:"E(R) = R_f + \\beta(E(R_m) - R_f)",desc:"Expected return"},
+      ],
+    },
+    questions:(window.__FL_QUESTIONS||{})["stocks"],
+  },
+  cfa_fi:{
+    id:'cfa_fi', title:'CFA Fixed Income', icon:'🎓', color:'#8b5cf6', colorLight:'#f5f3ff', time:'3 ore',
+    theory:[
+      {
+        title:"Term Structure dei Tassi",
+        intro:"La yield curve mostra la relazione tra rendimento e scadenza. Capirla è fondamentale per capire dove si trovano le opportunità (e i rischi) nel mercato obbligazionario.",
+        sections:[
+          {heading:"Tipi di yield curve", type:'table', headers:["Forma","Descrizione","Segnale"], rows:[["Normal (upward)","Rendimenti crescono con la maturity","Economia sana"],["Flat","Rendimenti simili su tutte le scadenze","Transizione"],["Inverted","Rendimenti brevi maggiori dei lunghi","Recessione in arrivo"],["Humped","Picco nelle scadenze medie","Transizione complessa"]]},
+          {heading:"Spot vs Forward rates", type:'concept', text:"Spot rate S(t): rendimento da oggi a t anni.\nForward rate f(A,B): rendimento implicito da A a B anni nel futuro.\n\nLa condizione no-arbitrage lega le due:\n(1+SA)^A × (1+fA,B)^(B-A) = (1+SB)^B"},
+          {heading:"Riding the yield curve", type:'highlight', text:"Strategia: acquisto bond a maturity più lunga e vendita prima della scadenza.\n\nFunziona se la curva rimane stabile: il bond scivola verso scadenze più brevi con yield più basso → apprezzamento del prezzo.\n\nRischio: se la curva si sposta verso l'alto, la strategia perde."},
+        ]
+      },
+      {
+        title:"Credit Analysis",
+        intro:"Il rischio di credito è la probabilità che un emittente non paghi quanto promesso. Misurarlo correttamente è il cuore dell'analisi obbligazionaria.",
+        sections:[
+          {heading:"I 4 fattori (4 C)", type:'list', items:["Capacity: capacità di generare cash flow per pagare il debito","Collateral: attivi a garanzia del debito","Covenants: clausole contrattuali di protezione","Character: track record e management del management"]},
+          {heading:"Misure di spread", type:'list', items:["G-Spread: YTM bond - YTM gov benchmark (semplice)","Z-Spread: spread costante sull'intera spot curve","OAS: Z-spread depurato del valore delle opzioni embedded","CDS Spread: costo assicurazione credito (mercato)"]},
+          {heading:"Rating e default", type:'highlight', text:"Investment Grade: BBB-/Baa3 o superiore\nHigh Yield (Junk): BB+/Ba1 o inferiore\n\nIl credit spread compensa per: probabilità di default × loss given default.\nSpread = probabilità default × (1 - Recovery Rate)"},
+        ]
+      },
+    ],
+    cards:[
+      {front:"Forward Rate f(1,1)",back:"Tasso implicito 1Y forward, starting in 1Y. Derivato dalla condizione no-arbitrage.",formula:"f_{1,1} = \\frac{(1+S_2)^2}{(1+S_1)} - 1",mnemonic:"No-arbitrage: due percorsi = stesso risultato"},
+      {front:"Effective Duration",back:"Per bond con opzioni embedded. Shock bilaterale alla benchmark curve.",formula:"EffD = \\frac{P_- - P_+}{2 \\times \\Delta y \\times P_0}",mnemonic:"Per callable, putable, MBS"},
+      {front:"Key Rate Duration",back:"Sensitività a UNO specifico punto della curva. Misura il reshaping risk.",formula:"KRD_k = -\\frac{\\Delta P / P}{\\Delta r_k}",mnemonic:"Identifica dove sei esposto sulla curva"},
+    ],
+    formulas:{
+      "Forward Rates":[
+        {name:"Forward da Spot",formula:"f_{1,1} = \\frac{(1+S_2)^2}{(1+S_1)} - 1",desc:"1Y forward, 1Y from now"},
+        {name:"General",formula:"(1+S_A)^A(1+f_{A,B-A})^{B-A} = (1+S_B)^B",desc:"No arbitrage condition"},
+      ],
+      "Duration":[
+        {name:"Macaulay",formula:"MacD = \\frac{\\sum t \\times PV(CF_t)}{P}",desc:"Tempo medio ponderato"},
+        {name:"Modified",formula:"ModD = \\frac{MacD}{1 + y/m}",desc:"Sensitivity al tasso"},
+        {name:"Effective",formula:"EffD = \\frac{P_- - P_+}{2\\Delta y \\cdot P_0}",desc:"Con opzioni embedded"},
+      ],
+    },
+    questions:(window.__FL_QUESTIONS||{})["cfa_fi"],
+  },
+  derivatives:{
+    id:'derivatives', title:'Derivati', icon:'⚡', color:'#ef4444', colorLight:'#fef2f2', time:'2 ore',
+    theory:[
+      {
+        title:"Le 4 famiglie di derivati",
+        intro:"Un derivato è un contratto il cui valore DERIVA da un altro asset (detto underlying). Non compri l'asset — compri un diritto o un obbligo su di esso.",
+        sections:[
+          {heading:"Le 4 famiglie", type:'table', headers:["Tipo","Obbligo?","Dove","Esempio"], rows:[["Forward","Sì, entrambi","OTC","Compro 1M euro tra 3 mesi a 1.08"],["Future","Sì, entrambi","Borsa","Future WTI petrolio dic."],["Opzione","Solo seller","Borsa/OTC","Call Apple strike 180 USD"],["Swap","Sì, entrambi","OTC","Fisso 3% vs Euribor 6M"]]},
+          {heading:"Perché esistono", type:'list', items:["Hedging: proteggersi da un rischio esistente (es. importatore copre rischio cambio)","Speculazione: prendere posizione direzionale con leva elevata","Arbitraggio: sfruttare inefficienze di prezzo tra mercati"]},
+          {heading:"Il principio chiave", type:'highlight', text:"I derivati separano il rischio dalla proprietà dell'asset.\n\nPuoi esporti al prezzo del petrolio senza comprare barili. Puoi proteggerti dal fallimento di un'azienda senza vendere i suoi bond (CDS)."},
+        ]
+      },
+      {
+        title:"Opzioni: anatomia e strategie",
+        intro:"Le opzioni danno al compratore un DIRITTO — non un obbligo. Questa asimmetria è ciò che le rende uniche e potenti.",
+        sections:[
+          {heading:"Terminologia fondamentale", type:'list', items:["Strike (K): prezzo di esercizio dell'opzione","Premium: prezzo pagato per il diritto — perdita massima del buyer","ITM (In the Money): esercizio conviene già ora","ATM (At the Money): prezzo circa uguale allo strike","OTM (Out of the Money): esercizio non conviene ora","Expiry: data di scadenza dell'opzione"]},
+          {heading:"Asimmetria del payoff", type:'highlight', text:"BUYER di call:\n• Perdita max = premio pagato\n• Guadagno = illimitato\n\nSELLER di call:\n• Guadagno max = premio incassato\n• Perdita = illimitata\n\nÈ un gioco a somma zero — ogni guadagno ha una controparte che perde."},
+          {heading:"Put-Call Parity", type:'concept', text:"C + PV(K) = P + S0\n\nRelazione no-arbitrage tra call, put e sottostante. Se viola questa equazione → esiste un'opportunità di arbitraggio senza rischio."},
+        ]
+      },
+    ],
+    cards:[
+      {front:"Call vs Put Payoff",back:"Call: guadagni se prezzo sale. Put: guadagni se prezzo scende. Buyer paga premio upfront.",formula:"C = \\max(0,S_T-K) \\quad P = \\max(0,K-S_T)",mnemonic:"Call compri, Put vendi"},
+      {front:"Put-Call Parity",back:"Relazione fondamentale tra call e put europee. Viola = arbitraggio.",formula:"C + PV(K) = P + S_0",mnemonic:"La bilancia deve essere in equilibrio!"},
+      {front:"Delta",back:"Sensibilità al prezzo del sottostante. Call: 0-1. Put: -1-0. ATM circa 0.5",formula:"\\Delta = \\frac{\\partial V}{\\partial S}",mnemonic:"Delta call = N(d1) in Black-Scholes"},
+    ],
+    formulas:{
+      "Payoffs":[
+        {name:"Call",formula:"Payoff = \\max(0, S_T - K)",desc:"Eserciti se S maggiore K"},
+        {name:"Put",formula:"Payoff = \\max(0, K - S_T)",desc:"Eserciti se K maggiore S"},
+        {name:"Put-Call Parity",formula:"C + PV(K) = P + S_0",desc:"European options"},
+      ],
+      "Greeks":[
+        {name:"Delta",formula:"\\Delta = \\frac{\\partial V}{\\partial S}",desc:"Sensitivity al prezzo"},
+        {name:"Theta",formula:"\\Theta = \\frac{\\partial V}{\\partial t}",desc:"Time decay (sempre minore di 0)"},
+        {name:"Vega",formula:"\\nu = \\frac{\\partial V}{\\partial \\sigma}",desc:"Sensitivity alla volatilità"},
+      ],
+    },
+    questions:(window.__FL_QUESTIONS||{})["derivatives"],
+  },
+};
+
+window.__FL_LESSONS = [
+  {id:1, name:'Obbligazioni',     icon:'📊', topicKey:'bonds',       gradient:'linear-gradient(135deg,#f59e0b,#d97706)'},
+  {id:2, name:'Azioni',           icon:'📈', topicKey:'stocks',      gradient:'linear-gradient(135deg,#10b981,#059669)'},
+  {id:3, name:'CFA Fixed Income', icon:'🎓', topicKey:'cfa_fi',      gradient:'linear-gradient(135deg,#8b5cf6,#6d28d9)'},
+  {id:4, name:'Derivati',         icon:'⚡', topicKey:'derivatives', gradient:'linear-gradient(135deg,#ef4444,#dc2626)'},
+  {id:5, name:'Alternative Inv.',  icon:'🏙️', topicKey:'alt_investments', gradient:'linear-gradient(135deg,#0d4f3c,#1a7a5e)'},
+];
+
+
+
+window.__FL_ALT_LOGO = "./alt_logo.png";
+window.__FL_LOGO = "./logo.png";
+
+</script>
+<script type="text/babel">
+
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ─── PHOSPHOR ICON HELPER ──────────────────────────────────────────────────────
+// ph-* = regular, ph-fill ph-* = filled, ph-duotone ph-* = duotone
+const Ph = ({ name, size=22, fill=false, duotone=false, style={}, className='' }) => (
+  <i className={`${duotone?'ph-duotone':fill?'ph-fill':''} ph-${name} ${className}`}
+     style={{fontSize:size, lineHeight:1, display:'inline-flex', alignItems:'center', ...style}}/>
+);
+// Aliases used throughout
+const IHome   = ({active,size=22}) => <Ph name="house"            size={size} fill={!!active}/>;
+const IBook   = ({active,size=22}) => <Ph name="books"            size={size} fill={!!active}/>;
+const IChat   = ({active,size=22}) => <Ph name="chat-circle-dots" size={size} fill={!!active}/>;
+const IUser   = ({active,size=22}) => <Ph name="user-circle"      size={size} fill={!!active}/>;
+const ICheck  = ({size=18,style})  => <Ph name="check-circle"     size={size} fill style={style}/>;
+const IX      = ({size=18,style,onClick}) => <Ph name="x-circle"  size={size} fill style={{cursor:onClick?'pointer':'default',...style}} onClick={onClick}/>;
+const ISend   = ({size=18})        => <Ph name="paper-plane-tilt" size={size} fill/>;
+const IChevL  = ({size=20})        => <Ph name="caret-left"       size={size} fill/>;
+const IChevR  = ({size=20,style})  => <Ph name="caret-right"      size={size} fill style={style}/>;
+const ICalc   = ({size=20})        => <Ph name="calculator"       size={size} duotone/>;
+const ISpark  = ({size=18,style})  => <Ph name="sparkle"          size={size} fill style={style}/>;
+const IPlus   = ({size=18})        => <Ph name="plus-circle"      size={size} fill/>;
+const ITrash  = ({size=16})        => <Ph name="trash"            size={size} fill/>;
+const IClock  = ({size=18})        => <Ph name="clock-countdown"  size={size} duotone/>;
+const IRefresh= ({size=18})        => <Ph name="arrow-counter-clockwise" size={size}/>;
+const IMail   = ({size=18})        => <Ph name="envelope-simple"  size={size} fill/>;
+const ILock   = ({size=18})        => <Ph name="lock-simple"      size={size} fill/>;
+const IEye    = ({size=18})        => <Ph name="eye"              size={size} fill/>;
+const IEyeOff = ({size=18})        => <Ph name="eye-slash"        size={size} fill/>;
+const IAlert  = ({size=18})        => <Ph name="warning-circle"   size={size} fill/>;
+const ILogOut = ({size=18})        => <Ph name="sign-out"         size={size} fill/>;
+const ITarget = ({size=18})        => <Ph name="target"           size={size} fill/>;
+const IZap    = ({size=18})        => <Ph name="lightning"        size={size} fill/>;
+
+const ALT_LOGO_B64 = window.__FL_ALT_LOGO;
+
+const AltIcon = ({size=24,style={}}) => <img src={ALT_LOGO_B64} style={{width:size,height:size,objectFit:'cover',borderRadius:size*0.22,...style}} alt="Alt Inv"/>;
+const LOGO_B64 = window.__FL_LOGO;
+
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const LEVELS = [
+  { min:0,    name:'🌱 Seme',     title:'Seme Curioso',      color:'#6b7280' },
+  { min:200,  name:'🌿 Germoglio',title:'Germoglio',         color:'#10b981' },
+  { min:600,  name:'☘️ Piantina', title:'Piantina',          color:'#059669' },
+  { min:1200, name:'🌳 Albero',   title:'Albero Esperto',    color:'#0d9488' },
+  { min:2500, name:'🌲 Sequoia',  title:'Sequoia del Sapere',color:'#0891b2' },
+  { min:5000, name:'🏔️ Foresta',  title:'Maestro della Foresta',color:'#7c3aed' },
+];
+const getLevel = xp => { let l=LEVELS[0]; for(const x of LEVELS) if(xp>=x.min) l=x; return l; };
+const getNextLevel = xp => { for(const l of LEVELS) if(xp<l.min) return l; return null; };
+
+const QUESTIONS = window.__FL_QUESTIONS;
+const TOPICS = window.__FL_TOPICS;
+const LESSONS = window.__FL_LESSONS;
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+const mockAuth = {
+  currentUser:null,
+  onAuthStateChanged:(cb)=>{const s=localStorage.getItem('fl_user');if(s){mockAuth.currentUser=JSON.parse(s);setTimeout(()=>cb(mockAuth.currentUser),120);}else setTimeout(()=>cb(null),120);return()=>{};},
+  signIn:async(email,pw)=>{await new Promise(r=>setTimeout(r,700));const u=JSON.parse(localStorage.getItem('fl_users')||'{}');if(!u[email.toLowerCase()])throw{code:'auth/user-not-found'};if(u[email.toLowerCase()].password!==pw)throw{code:'auth/wrong-password'};mockAuth.currentUser=u[email.toLowerCase()].user;localStorage.setItem('fl_user',JSON.stringify(mockAuth.currentUser));return{user:mockAuth.currentUser};},
+  register:async(email,pw,name)=>{await new Promise(r=>setTimeout(r,700));const u=JSON.parse(localStorage.getItem('fl_users')||'{}');if(u[email.toLowerCase()])throw{code:'auth/email-already-in-use'};const user={uid:'u_'+Date.now(),email,displayName:name,photoURL:null};u[email.toLowerCase()]={user,password:pw};localStorage.setItem('fl_users',JSON.stringify(u));mockAuth.currentUser=user;localStorage.setItem('fl_user',JSON.stringify(user));return{user};},
+  signOut:async()=>{mockAuth.currentUser=null;localStorage.removeItem('fl_user');},
+};
+const mockDb={
+  get:(uid)=>{const d=localStorage.getItem('fl_d_'+uid);return d?JSON.parse(d):null;},
+  set:(uid,data)=>localStorage.setItem('fl_d_'+uid,JSON.stringify(data)),
+};
+const defaultData=()=>({stats:{xp:0,coins:0,streak:1,quizzes:0,correct:0,bestStreak:0},completedLessons:[],activeLesson:1,settings:{timerEnabled:false}});
+const ERR={
+  'auth/email-already-in-use':'Email già registrata.',
+  'auth/user-not-found':'Account non trovato.',
+  'auth/wrong-password':'Password errata.',
+};
+
+// ─── KATEX COMPONENT ─────────────────────────────────────────────────────────
+function Tex({children,display=false,style={}}) {
+  const ref=useRef(null);
+  useEffect(()=>{
+    if(ref.current&&window.katex){
+      try{window.katex.render(children,ref.current,{displayMode:display,throwOnError:false});}
+      catch{if(ref.current)ref.current.textContent=children;}
+    }
+  },[children,display]);
+  return <span ref={ref} style={display?{display:'block',margin:'6px 0',overflowX:'auto',...style}:{display:'inline',...style}}/>;
+}
+
+// ─── SPLASH ───────────────────────────────────────────────────────────────────
+function Splash({onComplete}) {
+  const [p,setP]=useState(0);
+  useEffect(()=>{
+    const ts=[
+      setTimeout(()=>setP(1),150),
+      setTimeout(()=>setP(2),500),
+      setTimeout(()=>setP(3),900),
+      setTimeout(()=>setP(4),1400),
+      setTimeout(()=>setP(5),2100),
+      setTimeout(()=>onComplete(),2700),
+    ];
+    return()=>ts.forEach(clearTimeout);
+  },[]);
+
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:100,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'linear-gradient(160deg,#0d1b3e 0%,#0a0f1e 55%,#0d2a30 100%)',transition:'opacity .5s',opacity:p>=5?0:1}}>
+      {/* Glow */}
+      <div style={{position:'absolute',width:320,height:320,borderRadius:'50%',background:'radial-gradient(circle,rgba(16,185,129,.18),rgba(245,158,11,.08),transparent 70%)',filter:'blur(40px)',transition:'all .8s',transform:p>=1?'scale(1.4)':'scale(0)',opacity:p>=1?1:0}}/>
+
+      {/* Logo mark */}
+      <div style={{position:'relative',transition:'all .6s cubic-bezier(.22,.68,0,1.2)',transform:p>=1?'scale(1) rotate(0deg)':'scale(0) rotate(-20deg)',opacity:p>=1?1:0}}>
+        <img src={LOGO_B64} style={{width:96,height:96,borderRadius:24,boxShadow:'0 24px 64px rgba(15,32,68,.5)',display:'block'}} alt="FinLearn"/>
+      </div>
+
+      {/* Title */}
+      <div style={{marginTop:28,transition:'all .5s',opacity:p>=2?1:0,transform:p>=2?'translateY(0)':'translateY(12px)'}}>
+        <h1 style={{fontFamily:"'DM Serif Display',Georgia,serif",fontSize:42,color:'#fff',letterSpacing:'.04em',textAlign:'center',lineHeight:1}}>FinLearn</h1>
+        <p style={{color:'rgba(52,211,153,.55)',fontSize:11,letterSpacing:'.28em',textTransform:'uppercase',textAlign:'center',marginTop:8,fontWeight:500}}>Pianta oggi · Raccogli domani</p>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{width:160,height:2,background:'rgba(255,255,255,.08)',borderRadius:1,marginTop:40,overflow:'hidden',opacity:p>=3?1:0,transition:'opacity .3s'}}>
+        <div style={{height:'100%',borderRadius:1,background:'linear-gradient(90deg,#34d399,#f59e0b)',transition:'width 1.2s ease-out',width:p>=4?'100%':'0%'}}/>
+      </div>
+      <p style={{color:'rgba(255,255,255,.15)',fontSize:10,letterSpacing:'.18em',marginTop:12,opacity:p>=4?1:0,transition:'opacity .3s'}}>v3.0 · AI-Powered</p>
+    </div>
+  );
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+function Auth({onAuth}) {
+  const [mode,setMode]=useState('login');
+  const [email,setEmail]=useState('');
+  const [pw,setPw]=useState('');
+  const [pw2,setPw2]=useState('');
+  const [name,setName]=useState('');
+  const [show,setShow]=useState(false);
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState(null);
+
+  const submit=async(e)=>{
+    e.preventDefault();setErr(null);
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setErr('Email non valida.');
+    if(pw.length<6)return setErr('Password min 6 caratteri.');
+    if(mode==='register'&&pw!==pw2)return setErr('Le password non coincidono.');
+    if(mode==='register'&&name.trim().length<2)return setErr('Inserisci il tuo nome.');
+    setLoading(true);
+    try{
+      const res=mode==='login'?await mockAuth.signIn(email,pw):await mockAuth.register(email,pw,name.trim());
+      let data=mockDb.get(res.user.uid);
+      if(!data){data=defaultData();mockDb.set(res.user.uid,data);}
+      onAuth(res.user,data);
+    }catch(e){setErr(ERR[e.code]||'Errore. Riprova.');}
+    finally{setLoading(false);}
+  };
+
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24,background:'linear-gradient(160deg,#0d1b3e 0%,#0a0f1e 55%,#0d2a30 100%)'}}>
+      {/* Ambient blobs */}
+      <div style={{position:'absolute',top:'8%',left:'5%',width:280,height:280,borderRadius:'50%',background:'radial-gradient(circle,rgba(5,150,105,.12),transparent 70%)',filter:'blur(60px)',pointerEvents:'none'}}/>
+      <div style={{position:'absolute',bottom:'15%',right:'5%',width:220,height:220,borderRadius:'50%',background:'radial-gradient(circle,rgba(139,92,246,.1),transparent 70%)',filter:'blur(60px)',pointerEvents:'none'}}/>
+
+      <div style={{width:'100%',maxWidth:400}} className="anim-scale">
+        {/* Header */}
+        <div style={{textAlign:'center',marginBottom:32}}>
+          <img src={LOGO_B64} style={{width:72,height:72,borderRadius:20,margin:'0 auto 16px',display:'block',boxShadow:'0 20px 48px rgba(15,32,68,.4)'}} alt="FinLearn"/>
+          <h1 style={{fontFamily:"'DM Serif Display',Georgia,serif",fontSize:34,color:'#fff',letterSpacing:'.03em'}}>FinLearn</h1>
+          <p style={{color:'rgba(52,211,153,.5)',fontSize:12,letterSpacing:'.2em',textTransform:'uppercase',marginTop:6}}>AI-Powered CFA Prep</p>
+        </div>
+
+        {/* Card */}
+        <div style={{background:'rgba(255,255,255,.97)',borderRadius:24,padding:28,boxShadow:'0 32px 80px rgba(0,0,0,.3)',border:'1px solid rgba(255,255,255,.15)'}}>
+          {/* Tabs */}
+          <div className="pill-tab" style={{marginBottom:24}}>
+            {['login','register'].map(m=>(
+              <button key={m} className={`pill-tab-item${mode===m?' active':''}`} onClick={()=>{setMode(m);setErr(null);}}>
+                {m==='login'?'Accedi':'Registrati'}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:14}}>
+            {mode==='register'&&(
+              <input className="input" type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Il tuo nome" autoComplete="name"/>
+            )}
+            <div style={{position:'relative'}}>
+              <span style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none'}}><IMail size={16}/></span>
+              <input className="input" style={{paddingLeft:42}} type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" autoComplete="email"/>
+            </div>
+            <div style={{position:'relative'}}>
+              <span style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none'}}><ILock size={16}/></span>
+              <input className="input" style={{paddingLeft:42,paddingRight:44}} type={show?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} placeholder="Password"/>
+              <button type="button" onClick={()=>setShow(!show)} style={{position:'absolute',right:14,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'#94a3b8',cursor:'pointer',padding:4}}>
+                {show?<IEyeOff size={16}/>:<IEye size={16}/>}
+              </button>
+            </div>
+            {mode==='register'&&(
+              <input className="input" type="password" value={pw2} onChange={e=>setPw2(e.target.value)} placeholder="Conferma password"/>
+            )}
+            {err&&(
+              <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 14px',background:'#fef2f2',border:'1px solid #fecaca',borderRadius:10,color:'#dc2626',fontSize:13}}>
+                <IAlert size={15}/>{err}
+              </div>
+            )}
+            <button type="submit" disabled={loading} className="btn-primary" style={{padding:'14px 0',borderRadius:12,fontSize:15,marginTop:4}}>
+              {loading?<span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8}}><span style={{width:16,height:16,border:'2px solid rgba(255,255,255,.4)',borderTopColor:'#fff',borderRadius:'50%',display:'inline-block',animation:'spin .7s linear infinite'}}/> Caricamento…</span>
+               :mode==='login'?'Accedi →':'Crea account →'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CALCULATOR ───────────────────────────────────────────────────────────────
+function Calculator({onClose}) {
+  const [display,setDisplay]=useState('0');
+  const [sub,setSub]=useState('');
+  const [input,setInput]=useState('');
+  const [pendingOp,setPendingOp]=useState(null);
+  const [first,setFirst]=useState(null);
+  const [tvm,setTvm]=useState({N:0,IY:0,PV:0,PMT:0,FV:0});
+  const [cptMode,setCptMode]=useState(false);
+  const [sec,setSec]=useState(false);
+  const [cashFlows,setCashFlows]=useState([{value:0,freq:1}]);
+  const [cfMode,setCfMode]=useState(false);
+  const [cfIdx,setCfIdx]=useState(0);
+
+  const fmt=(n,d=6)=>{if(n===undefined||isNaN(n)||!isFinite(n))return'Error';if(Math.abs(n)<1e-9&&n!==0)return n.toExponential(4);if(Math.abs(n)>=1e10)return n.toExponential(4);return parseFloat(n.toFixed(d)).toLocaleString('en-US',{maximumFractionDigits:d});};
+  const raw=(n,d=6)=>{if(n===undefined||isNaN(n))return'0';return parseFloat(n.toFixed(d)).toString();};
+  const cur=()=>parseFloat((input||display).replace(/,/g,''))||0;
+
+  const pressNum=(n)=>{const ni=input===''||input==='0'?String(n):input+n;setInput(ni);setDisplay(ni);};
+  const pressDecimal=()=>{if(input.includes('.'))return;const ni=input===''?'0.':input+'.';setInput(ni);setDisplay(ni);};
+  const pressClear=()=>{if(input!==''){setInput('');setDisplay('0');}else{setDisplay('0');setSub('');setPendingOp(null);setFirst(null);}};
+  const pressOp=(op)=>{setFirst(cur());setPendingOp(op);setSub(op);setInput('');};
+  const pressEq=()=>{if(!pendingOp||first===null)return;const b=cur();let r;switch(pendingOp){case'+':r=first+b;break;case'−':r=first-b;break;case'×':r=first*b;break;case'÷':r=b!==0?first/b:NaN;break;default:r=b;}setDisplay(fmt(r));setFirst(null);setPendingOp(null);setInput('');setSub('');};
+
+  const pressTVM=(key)=>{
+    if(cptMode){
+      const{N,IY,PV,PMT,FV}=tvm;
+      const i=IY/100/12;let result;
+      try{
+        if(key==='FV'){result=i===0?-PV-PMT*N:-(PV*Math.pow(1+i,N)+PMT*(Math.pow(1+i,N)-1)/i);}
+        else if(key==='PV'){result=i===0?-FV-PMT*N:-FV/Math.pow(1+i,N)-PMT*(1-Math.pow(1+i,-N))/i;}
+        else if(key==='PMT'){result=i===0?N!==0?-(PV+FV)/N:0:-(PV+FV/Math.pow(1+i,N))*i/(1-Math.pow(1+i,-N));}
+        else if(key==='N'){result=i===0?-(PV+FV)/(PMT||1):Math.log((PMT-FV*i)/(PMT+PV*i))/Math.log(1+i);}
+        if(isNaN(result)||!isFinite(result)){setDisplay('Error');setSub('No solution');}
+        else{setTvm(t=>({...t,[key]:result}));setDisplay(fmt(result,2));setSub(`${key} = ${fmt(result,2)}`);}
+      }catch{setDisplay('Error');}
+      setCptMode(false);setInput('');return;
+    }
+    if(sec){
+      if(key==='FV'){setTvm({N:0,IY:0,PV:0,PMT:0,FV:0});setSub('CLR TVM');}
+      setSec(false);return;
+    }
+    const val=cur();setTvm(t=>({...t,[key]:val}));setSub(`${key}=${fmt(val,2)}`);setInput('');
+  };
+
+  const pressNPV=()=>{
+    const rate=tvm.IY/100;let npv=0,t=0;
+    for(const cf of cashFlows){for(let j=0;j<(cf.freq||1);j++){npv+=(cf.value||0)/Math.pow(1+rate,t);t++;}}
+    setDisplay(fmt(npv,2));setSub(`NPV @ ${tvm.IY}%`);setCfMode(false);
+  };
+
+  const CalcBtn=({label,sub:s,onClick,type='num'})=>{
+    const colors={num:{bg:'#3f3f46',text:'#fff'},op:{bg:'#27272a',text:'#e4e4e7'},tvm:{bg:'#065f46',text:'#fff'},func:{bg:'#1c1c1e',text:'#a1a1aa'},second:{bg:'#d97706',text:'#fff'}};
+    const c=colors[type]||colors.num;
+    return(
+      <button onClick={onClick} className="calc-btn" style={{background:c.bg,color:c.text,fontSize:type==='tvm'?11:13,position:'relative'}}>
+        {s&&<span style={{position:'absolute',top:-9,fontSize:7,color:'#f59e0b',fontWeight:600,letterSpacing:'.02em'}}>{s}</span>}
+        {label}
+      </button>
+    );
+  };
+
+  return(
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',backdropFilter:'blur(8px)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:16}} onClick={onClose}>
+      <div style={{background:'#18181b',borderRadius:24,width:'100%',maxWidth:360,boxShadow:'0 32px 80px rgba(0,0,0,.5)',border:'1px solid rgba(255,255,255,.08)',overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+        {/* Header */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'14px 16px',borderBottom:'1px solid rgba(255,255,255,.06)'}}>
+          <span style={{color:'#f59e0b',fontSize:10,fontWeight:800,letterSpacing:'.18em'}}>FINLEARN CALC</span>
+          <button onClick={onClose} style={{width:28,height:28,borderRadius:'50%',background:'rgba(255,255,255,.08)',border:'none',color:'#71717a',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><IX size={14}/></button>
+        </div>
+        {/* LCD */}
+        <div style={{background:'#0a1a0f',margin:'12px 14px 0',borderRadius:14,padding:'12px 14px',border:'1px solid rgba(52,211,153,.1)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',fontSize:8,color:'rgba(52,211,153,.5)',height:14}}>
+            <div style={{display:'flex',gap:6}}>{sec&&<span>2ND</span>}{cptMode&&<span>CPT</span>}{cfMode&&<span>CF</span>}</div>
+          </div>
+          <div style={{color:'rgba(52,211,153,.5)',fontSize:10,textAlign:'right',height:14,fontFamily:'monospace'}}>{sub}</div>
+          <div style={{color:'#4ade80',fontSize:32,fontFamily:'monospace',textAlign:'right',letterSpacing:'.04em',textShadow:'0 0 20px rgba(74,222,128,.4)'}}>{display}</div>
+          <div style={{display:'flex',justifyContent:'space-between',marginTop:8,paddingTop:8,borderTop:'1px solid rgba(52,211,153,.1)',fontSize:7,fontFamily:'monospace',color:'#166534',gap:4}}>
+            {Object.entries(tvm).map(([k,v])=><span key={k} style={{color:v?'#22c55e':'#166534'}}>{k}:{raw(v,0)}</span>)}
+          </div>
+        </div>
+        {/* Keys */}
+        <div style={{padding:'12px 14px 16px',display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:6}}>
+          <CalcBtn label="N" s="×P/Y" onClick={()=>pressTVM('N')} type="tvm"/>
+          <CalcBtn label="I/Y" onClick={()=>pressTVM('IY')} type="tvm"/>
+          <CalcBtn label="PV" onClick={()=>pressTVM('PV')} type="tvm"/>
+          <CalcBtn label="PMT" onClick={()=>pressTVM('PMT')} type="tvm"/>
+          <CalcBtn label="FV" s="CLR" onClick={()=>pressTVM('FV')} type="tvm"/>
+          <CalcBtn label="CF" onClick={()=>{setCfMode(true);setSub('CF0');}} type="func"/>
+          <CalcBtn label="NPV" onClick={pressNPV} type="func"/>
+          <CalcBtn label="IRR" onClick={()=>setSub('IRR N/A')} type="func"/>
+          <CalcBtn label="%" onClick={()=>{setDisplay(fmt(cur()/100));setInput('');}} type="func"/>
+          <CalcBtn label="√x" onClick={()=>{const v=cur();setDisplay(v<0?'Error':fmt(Math.sqrt(v)));setInput('');}} type="func"/>
+          <CalcBtn label="2nd" onClick={()=>{setSec(!sec);setSub(sec?'':'2nd');}} type="second"/>
+          <CalcBtn label="CPT" onClick={()=>{setCptMode(true);setSub('CPT');}} type="second"/>
+          <CalcBtn label="DEL" onClick={()=>{const ni=input.slice(0,-1);setInput(ni);setDisplay(ni||'0');}} type="func"/>
+          <CalcBtn label="CE" onClick={pressClear} type="func"/>
+          <CalcBtn label="÷" onClick={()=>pressOp('÷')} type="op"/>
+          <CalcBtn label="7" onClick={()=>pressNum(7)}/><CalcBtn label="8" onClick={()=>pressNum(8)}/><CalcBtn label="9" onClick={()=>pressNum(9)}/>
+          <CalcBtn label="×" onClick={()=>pressOp('×')} type="op"/>
+          <CalcBtn label="yˣ" onClick={()=>{setFirst(cur());setPendingOp('yˣ');setInput('');}} type="func"/>
+          <CalcBtn label="4" onClick={()=>pressNum(4)}/><CalcBtn label="5" onClick={()=>pressNum(5)}/><CalcBtn label="6" onClick={()=>pressNum(6)}/>
+          <CalcBtn label="−" onClick={()=>pressOp('−')} type="op"/>
+          <CalcBtn label="1/x" onClick={()=>{const v=cur();setDisplay(v===0?'Error':fmt(1/v));setInput('');}} type="func"/>
+          <CalcBtn label="1" onClick={()=>pressNum(1)}/><CalcBtn label="2" onClick={()=>pressNum(2)}/><CalcBtn label="3" onClick={()=>pressNum(3)}/>
+          <CalcBtn label="+" onClick={()=>pressOp('+')} type="op"/>
+          <CalcBtn label="=" onClick={pressEq} type="op"/>
+          <CalcBtn label="0" onClick={()=>pressNum(0)}/><CalcBtn label="." onClick={pressDecimal}/>
+          <CalcBtn label="+/−" onClick={()=>{if(input.startsWith('-'))setInput(input.slice(1));else if(input&&input!=='0')setInput('-'+input);setDisplay(input.startsWith('-')?input.slice(1):'-'+input);}} type="func"/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── AI CHAT PANEL ────────────────────────────────────────────────────────────
+function ChatPanel({user,chats,setChats,activeChatId,setActiveChatId}) {
+  const [msg,setMsg]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [showHistory,setShowHistory]=useState(false);
+  const endRef=useRef(null);
+
+  const current=chats.find(c=>c.id===activeChatId);
+  const messages=current?.messages||[];
+
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'});},[messages,loading]);
+
+  const SYSTEM=`Sei il Bull Coach 🐂, tutor AI esperto per CFA prep e finanza. Rispondi SEMPRE in italiano (termini tecnici in inglese ok). Sii conciso ma preciso. Usa emoji: 📊📈💡🎯⚡. Se l'utente fa quiz, guida senza dare risposta diretta. Copri: Fixed Income, Equity, Derivatives, Portfolio Mgmt, Ethics, FRA, Quant Methods.`;
+
+  const callAI=async(userMsg,history)=>{
+    const msgs=[];
+    for(const m of history.slice(-8))msgs.push({role:m.role,content:m.content});
+    if(msgs.length>0&&msgs[0].role==='user')msgs[0]={role:'user',content:SYSTEM+'\n\n---\n\n'+msgs[0].content};
+    else msgs.unshift({role:'user',content:SYSTEM+'\n\nPresentati brevemente.'},{role:'assistant',content:'🐂 Ciao! Sono il Bull Coach, il tuo tutor CFA. Cosa vuoi studiare?'});
+    msgs.push({role:'user',content:userMsg});
+    try{
+      const r=await window.claude.complete({messages:msgs.slice(-10)});
+      return r||fallback(userMsg);
+    }catch{return fallback(userMsg);}
+  };
+
+  const fallback=(t)=>{
+    const l=t.toLowerCase();
+    if(l.includes('duration'))return"📊 **Duration** misura la sensibilità al tasso:\n\n• **MacD** = tempo medio ponderato dei CF\n• **ModD** = MacD / (1+y/m) → variazione % per 1% Δy\n• **EffD** = per bond con opzioni embedded\n\n💡 ModD=7 → yield +1% ≈ price -7%";
+    if(l.includes('ytm')||l.includes('yield'))return"📈 **YTM** = IRR del bond!\n\nTasso che eguaglia PV di tutti i CF al prezzo.\n• **BEY** = 2 × semi YTM\n• **EAY** = (1+semi YTM)² - 1\n\n⚡ Premium bond: Coupon maggiore CY maggiore YTM\n⚡ Discount bond: Coupon minore CY minore YTM";
+    if(l.includes('ciao')||l.includes('hello'))return`🐂 Ciao${user?.displayName?' '+user.displayName:''}! Pronto a dominare il CFA?\n\nChiedimi di:\n📊 Fixed Income &amp; Duration\n📈 Equity &amp; Valuation\n⚡ Derivatives &amp; Greeks\n📐 Quant Methods\n\nCosa vuoi affrontare?`;
+    return"🐂 Ottima domanda! Posso aiutarti con:\n\n📊 Bond valuation, duration, spreads\n📈 Equity, P/E, DDM, FCF\n⚡ Options, futures, swaps\n📐 NPV, IRR, CAPM\n\nDimmi cosa vuoi approfondire! 💪";
+  };
+
+  const newChat=()=>{
+    const c={id:`c_${Date.now()}`,title:'Nuova chat',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),messages:[{role:'assistant',content:`🐂 Ciao${user?.displayName?' '+user.displayName:''}! Sono il Bull Coach, il tuo tutor AI per il CFA.\n\nChiedimi qualsiasi cosa su:\n📊 Fixed Income &amp; Bonds\n📈 Equity Analysis\n⚡ Derivatives\n📐 Quant Methods`,timestamp:new Date().toISOString()}]};
+    setChats(p=>[c,...p].slice(0,50));setActiveChatId(c.id);setShowHistory(false);
+  };
+
+  const send=async()=>{
+    if(!msg.trim()||loading)return;
+    const text=msg.trim();
+    let chatId=activeChatId;
+    if(!chatId){const c={id:`c_${Date.now()}`,title:text.slice(0,40),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),messages:[]};chatId=c.id;setChats(p=>[c,...p].slice(0,50));setActiveChatId(c.id);}
+    const um={role:'user',content:text,timestamp:new Date().toISOString()};
+    setChats(p=>p.map(c=>c.id===chatId?{...c,title:c.messages.filter(x=>x.role==='user').length===0?text.slice(0,40):c.title,messages:[...c.messages,um],updatedAt:new Date().toISOString()}:c));
+    setMsg('');setLoading(true);
+    try{
+      const cur=chats.find(c=>c.id===chatId)?.messages||[];
+      const reply=await callAI(text,cur);
+      setChats(p=>p.map(c=>c.id===chatId?{...c,messages:[...c.messages,{role:'assistant',content:reply,timestamp:new Date().toISOString()}],updatedAt:new Date().toISOString()}:c));
+    }catch{
+      setChats(p=>p.map(c=>c.id===chatId?{...c,messages:[...c.messages,{role:'assistant',content:'⚠️ Errore. Riprova!',timestamp:new Date().toISOString()}],updatedAt:new Date().toISOString()}:c));
+    }
+    setLoading(false);
+  };
+
+  const fmtMsg=(text)=>text.split('\n').map((line,i)=>{
+    const fmt=line.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;font-size:.9em">$1</code>');
+    if(line.startsWith('• ')||line.startsWith('- '))return<div key={i} style={{display:'flex',gap:8,marginTop:2}}><span style={{color:'var(--em)',flexShrink:0}}>•</span><span dangerouslySetInnerHTML={{__html:fmt.slice(2)}}/></div>;
+    return<div key={i} style={{marginTop:i>0?2:0}} dangerouslySetInnerHTML={{__html:fmt}}/>;
+  });
+
+  const suggestions=['📊 Cos\'è la Duration?','📈 Come calcolo YTM?','⚡ Differenza Call vs Put','📐 Spiegami il CAPM'];
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',height:'100%',background:'#fafafa'}}>
+      {/* Header */}
+      <div style={{background:'rgba(255,255,255,.95)',backdropFilter:'blur(16px)',borderBottom:'1px solid var(--border)',padding:'12px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:44,height:44,borderRadius:14,background:'linear-gradient(135deg,#f59e0b,#ea580c)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,boxShadow:'0 4px 12px rgba(245,158,11,.3)'}}>🐂</div>
+          <div>
+            <div style={{fontWeight:700,fontSize:15,color:'var(--ink)'}}>Bull Coach AI</div>
+            <div style={{fontSize:11,color:'var(--ink-4)',display:'flex',alignItems:'center',gap:4}}><ISpark size={10} style={{color:'#f59e0b'}}/> Powered by Claude</div>
+          </div>
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <button onClick={()=>setShowHistory(true)} style={{position:'relative',width:38,height:38,borderRadius:12,background:'#f1f5f9',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--ink-3)'}}>
+            <IClock size={17}/>
+            {chats.length>0&&<span style={{position:'absolute',top:-3,right:-3,width:16,height:16,background:'#f59e0b',color:'#fff',fontSize:9,fontWeight:700,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center'}}>{chats.length}</span>}
+          </button>
+          <button onClick={newChat} style={{width:38,height:38,borderRadius:12,background:'#fef3c7',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#d97706'}}><IPlus size={17}/></button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      {!activeChatId&&chats.length===0?(
+        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24,gap:20}}>
+          <div style={{width:80,height:80,borderRadius:24,background:'linear-gradient(135deg,#f59e0b,#ea580c)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:40,boxShadow:'0 16px 48px rgba(245,158,11,.3)'}}>🐂</div>
+          <div style={{textAlign:'center'}}>
+            <div style={{fontSize:20,fontWeight:800,color:'var(--ink)'}}>Bull Coach AI</div>
+            <div style={{fontSize:13,color:'var(--ink-3)',marginTop:4}}>Il tuo tutor CFA personale</div>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,width:'100%',maxWidth:320}}>
+            {suggestions.map((s,i)=>(
+              <button key={i} onClick={()=>{setMsg(s.slice(2));}}
+                style={{padding:'12px 14px',background:'#fff',border:'1.5px solid var(--border)',borderRadius:14,fontSize:12,color:'var(--ink-2)',cursor:'pointer',textAlign:'left',fontWeight:500,fontFamily:'inherit',transition:'all .18s'}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--am)';e.currentTarget.style.background='#fffbeb';}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.background='#fff';}}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      ):(
+        <div style={{flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',padding:'16px 16px 8px'}}>
+          <div style={{maxWidth:560,margin:'0 auto',display:'flex',flexDirection:'column',gap:12}}>
+            {messages.map((m,i)=>(
+              <div key={i} style={{display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
+                {m.role==='assistant'&&<div style={{width:28,height:28,borderRadius:9,background:'linear-gradient(135deg,#f59e0b,#ea580c)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,marginRight:8,flexShrink:0,marginTop:4}}>🐂</div>}
+                <div className={m.role==='user'?'bubble-user':'bubble-ai'} style={{maxWidth:'82%',padding:'11px 15px',fontSize:13.5,lineHeight:1.65,color:m.role==='user'?'#fff':'var(--ink-2)'}}>
+                  <div style={{display:'flex',flexDirection:'column',gap:1}}>{fmtMsg(m.content)}</div>
+                </div>
+              </div>
+            ))}
+            {loading&&(
+              <div style={{display:'flex',justifyContent:'flex-start'}}>
+                <div style={{width:28,height:28,borderRadius:9,background:'linear-gradient(135deg,#f59e0b,#ea580c)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,marginRight:8,flexShrink:0}}>🐂</div>
+                <div className="bubble-ai" style={{padding:'14px 16px'}}>
+                  <div style={{display:'flex',gap:5}}>
+                    {[0,.15,.3].map((d,i)=><div key={i} style={{width:7,height:7,background:'#94a3b8',borderRadius:'50%',animation:'bounce-dot 1.2s infinite',animationDelay:`${d}s`}}/>)}
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={endRef}/>
+          </div>
+        </div>
+      )}
+
+      {/* Input */}
+      <div style={{background:'rgba(255,255,255,.95)',backdropFilter:'blur(16px)',borderTop:'1px solid var(--border)',padding:'12px 16px',flexShrink:0}}>
+        <div style={{maxWidth:560,margin:'0 auto',display:'flex',gap:10,alignItems:'center'}}>
+          <input value={msg} onChange={e=>setMsg(e.target.value)} onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&send()}
+            placeholder="Chiedimi di bonds, equity, derivati…" disabled={loading}
+            style={{flex:1,padding:'12px 16px',background:'#f1f5f9',border:'1.5px solid transparent',borderRadius:14,outline:'none',fontSize:14,fontFamily:'inherit',color:'var(--ink)',transition:'all .18s'}}
+            onFocus={e=>{e.target.style.background='#fff';e.target.style.border='1.5px solid var(--em)';e.target.style.boxShadow='0 0 0 3px rgba(5,150,105,.1)';}}
+            onBlur={e=>{e.target.style.background='#f1f5f9';e.target.style.border='1.5px solid transparent';e.target.style.boxShadow='none';}}
+          />
+          <button onClick={send} disabled={!msg.trim()||loading}
+            style={{width:46,height:46,borderRadius:14,background:msg.trim()&&!loading?'linear-gradient(135deg,#f59e0b,#ea580c)':'#f1f5f9',border:'none',cursor:msg.trim()&&!loading?'pointer':'default',display:'flex',alignItems:'center',justifyContent:'center',color:msg.trim()&&!loading?'#fff':'#cbd5e1',transition:'all .2s',flexShrink:0}}>
+            <ISend size={17}/>
+          </button>
+        </div>
+      </div>
+
+      {/* History drawer */}
+      {showHistory&&(
+        <div style={{position:'absolute',inset:0,zIndex:50,display:'flex'}} className="anim-in">
+          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,.35)',backdropFilter:'blur(4px)'}} onClick={()=>setShowHistory(false)}/>
+          <div style={{position:'relative',marginLeft:'auto',width:300,background:'#fff',height:'100%',display:'flex',flexDirection:'column',boxShadow:'-16px 0 48px rgba(0,0,0,.12)'}}>
+            <div style={{padding:'16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div>
+                <div style={{fontWeight:700,fontSize:15,color:'var(--ink)'}}>Cronologia</div>
+                <div style={{fontSize:11,color:'var(--ink-4)',marginTop:2}}>{chats.length} conversazioni</div>
+              </div>
+              <button onClick={()=>setShowHistory(false)} style={{width:32,height:32,borderRadius:10,background:'#f1f5f9',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--ink-3)'}}><IX size={15}/></button>
+            </div>
+            <div style={{flex:1,overflowY:'auto',padding:'10px 10px'}}>
+              {chats.length===0?<div style={{textAlign:'center',padding:40,color:'var(--ink-4)'}}><IChat size={28} style={{margin:'0 auto 8px',display:'block'}}/><div style={{fontSize:13}}>Nessuna chat</div></div>
+              :chats.map(c=>(
+                <div key={c.id} onClick={()=>{setActiveChatId(c.id);setShowHistory(false);}}
+                  style={{padding:'12px 12px',borderRadius:12,cursor:'pointer',marginBottom:4,background:c.id===activeChatId?'#ecfdf5':'transparent',border:`1.5px solid ${c.id===activeChatId?'#a7f3d0':'transparent'}`,transition:'all .15s',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}
+                  onMouseEnter={e=>{if(c.id!==activeChatId)e.currentTarget.style.background='#f8fafc';}}
+                  onMouseLeave={e=>{if(c.id!==activeChatId)e.currentTarget.style.background='transparent';}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:600,fontSize:13,color:'var(--ink)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.title||'Chat'}</div>
+                    <div style={{fontSize:11,color:'var(--ink-4)',marginTop:2}}>{new Date(c.updatedAt).toLocaleDateString('it')} · {c.messages?.length||0} msg</div>
+                  </div>
+                  <button onClick={e=>{e.stopPropagation();setChats(p=>p.filter(x=>x.id!==c.id));if(activeChatId===c.id)setActiveChatId(null);}}
+                    style={{width:24,height:24,borderRadius:8,background:'transparent',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#fca5a5',opacity:0,transition:'opacity .15s',flexShrink:0}}
+                    onMouseEnter={e=>e.currentTarget.style.opacity='1'} onMouseLeave={e=>e.currentTarget.style.opacity='0'}>
+                    <ITrash size={12}/>
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div style={{padding:'12px'}}>
+              <button onClick={newChat} style={{width:'100%',padding:'12px',borderRadius:14,background:'linear-gradient(135deg,#f59e0b,#ea580c)',color:'#fff',border:'none',fontWeight:700,fontSize:14,cursor:'pointer',fontFamily:'inherit'}}>+ Nuova Chat</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── TEST CFA COMPONENT ──────────────────────────────────────────────────────
+
+function App(){return <div>OK</div>;}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script></body></html>
