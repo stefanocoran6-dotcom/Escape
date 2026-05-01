@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>StepStats — Analisi Passi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ac: #6366f1; --ac-d: #4338ca; --ac-l: #eef2ff;
+    --ok: #10b981; --ok-l: #d1fae5;
+    --warn: #f59e0b; --warn-l: #fef3c7;
+    --bad: #ef4444; --bad-l: #fee2e2;
+    --ink: #0f172a; --ink-2: #334155; --ink-3: #64748b; --ink-4: #94a3b8;
+    --bg: #f1f5f9; --card: #ffffff; --border: rgba(15,23,42,.07);
+    --shadow: 0 4px 16px rgba(15,23,42,.07), 0 1px 4px rgba(15,23,42,.04);
+    --r: 16px;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { background: var(--bg); min-height: 100vh; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .pbar { height: 6px; border-radius: 99px; background: #e2e8f0; overflow: hidden; }
+  .pfill { height: 100%; border-radius: 99px; transition: width .65s cubic-bezier(.22,.68,0,1.2); }
+
+  .drop-zone {
+    border: 2px dashed rgba(15,23,42,.12);
+    border-radius: 20px;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color .2s, background .2s;
+    margin-bottom: 12px;
+  }
+  .drop-zone.over {
+    border-color: var(--ac);
+    background: var(--ac-l);
+  }
+  .spinner {
+    width: 38px; height: 38px;
+    border: 3px solid var(--ac);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 12px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useCallback } = React;
+
+// ── Icon ────────────────────────────────────────────────────────────────────
+const Ph = ({ name, size = 20, fill = false, style = {} }) => (
+  <i
+    className={(fill ? 'ph-fill ' : '') + 'ph-' + name}
+    style={{ fontSize: size, lineHeight: 1, display: 'inline-flex', alignItems: 'center', flexShrink: 0, ...style }}
+  />
+);
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+const comma  = n  => Math.round(n).toLocaleString('it-IT');
+const fmtK   = n  => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(Math.round(n));
+const fmtDate = ds => new Date(ds + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
+const sr = s => { const x = Math.sin(s + 1) * 10000; return x - Math.floor(x); };
+
+function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+
+// ── Apple Health XML parser ──────────────────────────────────────────────────
+function parseHealthXML(xmlText) {
+  const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+  if (doc.querySelector('parsererror')) throw new Error('File XML non valido.');
+  const records = doc.querySelectorAll('Record[type="HKQuantityTypeIdentifierStepCount"]');
+  if (!records.length) throw new Error('Nessun dato passi trovato. Assicurati di usare export.xml dalla cartella dello ZIP.');
+  const daily = {};
+  records.forEach(r => {
+    const date = (r.getAttribute('startDate') || '').substring(0, 10);
+    const val  = parseInt(r.getAttribute('value') || '0', 10);
+    if (date) daily[date] = (daily[date] || 0) + val;
+  });
+  return daily;
+}
+
+// ── Demo data generator (2 years, ending today) ──────────────────────────────
+function generateDemo() {
+  const daily = {};
+  const today = new Date();
+  for (let i = 730; i >= 1; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const isWknd = d.getDay() === 0 || d.getDay() === 6;
+    const base  = isWknd ? 5600 : 9300;
+    const noise = Math.floor((sr(i * 17 + 3) - 0.5) * 10000);
+    const spike = sr(i * 7 + 9) < 0.07 ? Math.floor(sr(i * 13 + 5) * 14000) : 0;
+    daily[ds] = Math.max(200, base + noise + spike);
+  }
+  // today: partial day
+  daily[today.toISOString().split('T')[0]] = 3247;
+  return daily;
+}
+
+// ── Stats engine ─────────────────────────────────────────────────────────────
+function computeStats(daily) {
+  const TARGET = 10000;
+  const today  = new Date();
+  const todayStr   = today.toISOString().split('T')[0];
+  const y          = today.getFullYear();
+  const m          = today.getMonth() + 1;
+  const dayOfMonth = today.getDate();
+  const totalDays  = daysInMonth(y, m);
+  const monthKey   = `${y}-${String(m).padStart(2, '0')}`;
+
+  const entries = Object.entries(daily).sort(([a], [b]) => a < b ? -1 : 1);
+
+  // All-time best day
+  const bestDay = entries.reduce(
+    (b, [date, steps]) => steps > b.steps ? { date, steps } : b,
+    { date: '', steps: 0 }
+  );
+
+  // Monthly totals
+  const monthly = {};
+  entries.forEach(([date, steps]) => {
+    const mk = date.substring(0, 7);
+    if (!monthly[mk]) monthly[mk] = { total: 0, count: 0 };
+    monthly[mk].total += steps;
+    monthly[mk].count++;
+  });
+
+  const thisM      = monthly[monthKey] || { total: 0, count: 0 };
+  const todaySteps = daily[todayStr] || 0;
+  const monthAvg   = thisM.count ? Math.round(thisM.total / thisM.count) : 0;
+  const daysLeft   = totalDays - dayOfMonth + 1;
+  const stepsNeeded   = Math.max(0, TARGET * totalDays - thisM.total);
+  const perDayNeeded  = daysLeft > 0 ? Math.ceil(stepsNeeded / daysLeft) : 0;
+
+  // Top 5 months by avg steps/day
+  const topMonths = Object.entries(monthly)
+    .map(([mk, { total, count }]) => {
+      const [my, mm] = mk.split('-').map(Number);
+      return {
+        key: mk,
+        avg: Math.round(total / count),
+        label: new Date(my, mm - 1, 1).toLocaleString('it-IT', { month: 'long', year: 'numeric' }),
+      };
+    })
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 5);
+
+  // Top 5 days
+  const topDays = [...entries]
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([date, steps]) => ({ date, steps }));
+
+  // Last 12 months for bar chart
+  const last12 = Array.from({ length: 12 }, (_, i) => {
+    const offset = 11 - i;
+    const d  = new Date(y, m - 1 - offset, 1);
+    const mk = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const md = monthly[mk] || { total: 0, count: 0 };
+    return {
+      key:   mk,
+      label: d.toLocaleString('it-IT', { month: 'short' }),
+      avg:   md.count ? Math.round(md.total / md.count) : 0,
+    };
+  });
+
+  // Streaks (days >= TARGET)
+  let bestStreak = 0, streak = 0;
+  entries.forEach(([, s]) => {
+    streak = s >= TARGET ? streak + 1 : 0;
+    if (streak > bestStreak) bestStreak = streak;
+  });
+  let curStreak = 0;
+  for (let i = entries.length - 1; i >= 0; i--) {
+    if (daily[entries[i][0]] >= TARGET) curStreak++;
+    else break;
+  }
+
+  // Day-of-week averages (0=Sun ... 6=Sat)
+  const dowT = [0,0,0,0,0,0,0], dowC = [0,0,0,0,0,0,0];
+  entries.forEach(([date, steps]) => {
+    const dw = new Date(date + 'T00:00:00').getDay();
+    dowT[dw] += steps;
+    dowC[dw]++;
+  });
+  const dowAvg = dowT.map((t, i) => (dowC[i] ? Math.round(t / dowC[i]) : 0));
+
+  const monthLabel = new Date(y, m - 1, 1).toLocaleString('it-IT', { month: 'long' });
+
+  return {
+    TARGET, todayStr, todaySteps,
+    bestDay,
+    thisMonth: {
+      key: monthKey, total: thisM.total, count: thisM.count,
+      avg: monthAvg, totalDays, dayOfMonth, daysLeft,
+      stepsNeeded, perDayNeeded, monthLabel,
+    },
+    topMonths, topDays, last12, curStreak, bestStreak, dowAvg,
+  };
+}
+
+// ── Bar chart (SVG) ──────────────────────────────────────────────────────────
+function BarChart({ bars, labels, target }) {
+  const maxVal = Math.max(...bars, target || 0, 1);
+  const BW = 26, H = 100;
+  const W  = bars.length * BW;
+  return (
+    <svg viewBox={`0 0 ${W} ${H + 20}`} width="100%" style={{ overflow: 'visible' }}>
+      {bars.map((v, i) => {
+        const bh    = Math.round((v / maxVal) * H);
+        const color = v >= (target || 0) ? '#10b981'
+                    : v >= (target || 0) * 0.75 ? '#f59e0b'
+                    : '#6366f1';
+        return (
+          <g key={i} transform={`translate(${i * BW}, 0)`}>
+            <rect x={3} y={H - bh} width={20} height={bh} rx={4} fill={color} opacity={0.85} />
+            <text
+              x={13} y={H + 13}
+              textAnchor="middle" fontSize={9} fill="#94a3b8"
+              fontFamily="Plus Jakarta Sans, sans-serif"
+            >{labels[i]}</text>
+          </g>
+        );
+      })}
+      {target > 0 && (
+        <line
+          x1={0} y1={H - (target / maxVal) * H}
+          x2={W} y2={H - (target / maxVal) * H}
+          stroke="#ef4444" strokeDasharray="4,3" strokeWidth={1.5} opacity={0.5}
+        />
+      )}
+    </svg>
+  );
+}
+
+// ── Import screen ────────────────────────────────────────────────────────────
+function ImportScreen({ onData, onDemo, loading, error }) {
+  const [over, setOver]   = useState(false);
+  const fileRef           = useRef();
+
+  const processFile = useCallback(file => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => onData(e.target.result);
+    reader.readAsText(file, 'UTF-8');
+  }, [onData]);
+
+  return (
+    <div style={{
+      minHeight: '100vh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '32px 20px', background: '#f1f5f9',
+    }}>
+      <div style={{ width: '100%', maxWidth: 420 }}>
+
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{
+            width: 68, height: 68, borderRadius: 20,
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 16px',
+            boxShadow: '0 10px 28px rgba(99,102,241,.38)',
+          }}>
+            <Ph name="sneaker-move" size={34} fill style={{ color: '#fff' }} />
+          </div>
+          <h1 style={{ fontSize: 30, fontWeight: 800, color: '#0f172a', letterSpacing: '-.025em' }}>StepStats</h1>
+          <p style={{ fontSize: 14, color: '#64748b', marginTop: 6 }}>Analisi avanzata dei tuoi passi</p>
+        </div>
+
+        {/* Drop zone */}
+        <div
+          className={`drop-zone${over ? ' over' : ''}`}
+          onClick={() => fileRef.current.click()}
+          onDragOver={e => { e.preventDefault(); setOver(true); }}
+          onDragLeave={() => setOver(false)}
+          onDrop={e => { e.preventDefault(); setOver(false); processFile(e.dataTransfer.files[0]); }}
+        >
+          <input
+            ref={fileRef} type="file" accept=".xml"
+            style={{ display: 'none' }}
+            onChange={e => processFile(e.target.files[0])}
+          />
+          {loading ? (
+            <>
+              <div className="spinner" />
+              <p style={{ fontWeight: 600, color: '#6366f1', fontSize: 15 }}>Analisi in corso…</p>
+              <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
+                I file grandi richiedono qualche secondo
+              </p>
+            </>
+          ) : (
+            <>
+              <Ph name="file-arrow-up" size={42} style={{ color: '#6366f1', display: 'block', margin: '0 auto 12px' }} />
+              <p style={{ fontWeight: 700, color: '#0f172a', fontSize: 15 }}>Carica export.xml</p>
+              <p style={{ fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
+                Trascina il file qui o clicca per selezionarlo
+              </p>
+            </>
+          )}
+        </div>
+
+        {error && (
+          <div style={{
+            background: '#fee2e2', border: '1px solid #fecaca',
+            borderRadius: 10, padding: '12px 16px', marginBottom: 12,
+            fontSize: 13, color: '#dc2626', fontWeight: 500,
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <Ph name="warning-circle" size={16} fill />
+            {error}
+          </div>
+        )}
+
+        {/* Demo */}
+        <button
+          onClick={onDemo}
+          style={{
+            width: '100%', padding: '14px', borderRadius: 12,
+            border: '1.5px solid rgba(99,102,241,.25)',
+            background: 'rgba(99,102,241,.06)',
+            color: '#6366f1', fontWeight: 700, fontSize: 15,
+            cursor: 'pointer', fontFamily: 'inherit', marginBottom: 24,
+            transition: 'all .18s',
+          }}
+        >
+          Prova con dati demo
+        </button>
+
+        {/* How-to */}
+        <div style={{
+          background: '#fff', borderRadius: 14,
+          border: '1px solid rgba(15,23,42,.07)',
+          padding: '16px 20px',
+        }}>
+          <p style={{
+            fontSize: 11, fontWeight: 700, color: '#94a3b8',
+            textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 10,
+          }}>Come esportare da iPhone</p>
+          {[
+            "Apri l'app Salute",
+            "Tocca la tua foto profilo in alto a destra",
+            'Scorri in basso → "Esporta dati"',
+            "Estrai lo ZIP e carica export.xml",
+          ].map((step, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, marginBottom: i < 3 ? 9 : 0, alignItems: 'flex-start' }}>
+              <span style={{
+                width: 20, height: 20, borderRadius: '50%',
+                background: '#eef2ff', color: '#6366f1',
+                fontWeight: 800, fontSize: 11,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, marginTop: 1,
+              }}>{i + 1}</span>
+              <span style={{ fontSize: 13, color: '#334155', lineHeight: 1.45 }}>{step}</span>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+function Dashboard({ stats, onReset }) {
+  const {
+    TARGET, todaySteps,
+    bestDay, thisMonth, topMonths, topDays,
+    last12, curStreak, bestStreak, dowAvg,
+  } = stats;
+
+  // Projection status
+  const nd = thisMonth.perDayNeeded;
+  const projColor = nd <= TARGET ? '#10b981' : nd <= 13000 ? '#f59e0b' : '#ef4444';
+  const projBg    = nd <= TARGET ? '#d1fae5' : nd <= 13000 ? '#fef3c7' : '#fee2e2';
+  const projLabel = nd <= TARGET ? 'In linea 🎯' : nd <= 13000 ? 'Leggermente indietro' : 'Molto indietro';
+
+  const todayPct = Math.min(1, todaySteps / TARGET);
+  const monthPct = thisMonth.count
+    ? Math.min(1, thisMonth.total / (TARGET * thisMonth.totalDays))
+    : 0;
+
+  // Day-of-week (Italian order: Mon → Sun)
+  const DOW_ORDER  = [1, 2, 3, 4, 5, 6, 0];
+  const DOW_LABELS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+  const dowBars    = DOW_ORDER.map(i => dowAvg[i]);
+
+  const card = (delay, extra = {}) => ({
+    ...extra,
+    background: '#fff',
+    borderRadius: 16,
+    border: '1px solid rgba(15,23,42,.07)',
+    boxShadow: '0 4px 16px rgba(15,23,42,.07)',
+    padding: '18px',
+    animation: `fadeUp .38s ${delay}ms both`,
+  });
+
+  return (
+    <div style={{ background: '#f1f5f9', minHeight: '100vh' }}>
+
+      {/* Sticky header */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 10,
+        background: 'rgba(241,245,249,.92)',
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(15,23,42,.07)',
+        padding: '12px 20px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 9,
+            background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Ph name="sneaker-move" size={16} fill style={{ color: '#fff' }} />
+          </div>
+          <span style={{ fontWeight: 800, fontSize: 17, color: '#0f172a' }}>StepStats</span>
+        </div>
+        <button
+          onClick={onReset}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 14px', borderRadius: 8,
+            border: '1.5px solid rgba(15,23,42,.1)',
+            background: '#fff', color: '#334155',
+            fontWeight: 600, fontSize: 13,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}
+        >
+          <Ph name="arrow-clockwise" size={13} /> Importa
+        </button>
+      </div>
+
+      {/* Scroll content */}
+      <div style={{ maxWidth: 600, margin: '0 auto', padding: '20px 16px 52px' }}>
+
+        {/* ── Row 1: Today + Month ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+
+          {/* Today */}
+          <div style={card(0)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <Ph name="sun" size={13} style={{ color: '#f59e0b' }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.07em' }}>Oggi</span>
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', lineHeight: 1, letterSpacing: '-.02em' }}>
+              {comma(todaySteps)}
+            </div>
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 3 }}>passi</div>
+            <div style={{ marginTop: 14 }}>
+              <div className="pbar">
+                <div className="pfill" style={{ width: `${todayPct * 100}%`, background: todayPct >= 1 ? '#10b981' : '#6366f1' }} />
+              </div>
+              <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+                {Math.round(todayPct * 100)}% del target
+              </div>
+            </div>
+          </div>
+
+          {/* This month */}
+          <div style={card(60)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <Ph name="calendar-blank" size={13} style={{ color: '#6366f1' }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.07em' }}>
+                {thisMonth.monthLabel}
+              </span>
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', lineHeight: 1, letterSpacing: '-.02em' }}>
+              {fmtK(thisMonth.total)}
+            </div>
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 3 }}>
+              media {comma(thisMonth.avg)}/giorno
+            </div>
+            <div style={{ marginTop: 14 }}>
+              <div className="pbar">
+                <div className="pfill" style={{ width: `${monthPct * 100}%`, background: monthPct >= 1 ? '#10b981' : '#6366f1' }} />
+              </div>
+              <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+                giorno {thisMonth.dayOfMonth} di {thisMonth.totalDays}
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── ★ Projection card ── */}
+        <div style={{
+          ...card(100, { border: `1px solid ${projColor}28`, padding: '20px' }),
+          marginBottom: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Ph name="target" size={15} style={{ color: projColor }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>
+                Obiettivo 10k — {thisMonth.monthLabel}
+              </span>
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 700, padding: '4px 10px',
+              borderRadius: 99, background: projBg, color: projColor,
+              whiteSpace: 'nowrap',
+            }}>{projLabel}</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+            {/* Hero number */}
+            <div>
+              <div style={{ fontSize: 42, fontWeight: 800, color: projColor, lineHeight: 1, letterSpacing: '-.03em' }}>
+                {comma(nd)}
+              </div>
+              <div style={{ fontSize: 12, color: '#64748b', marginTop: 6, lineHeight: 1.45 }}>
+                passi/giorno necessari<br />
+                <span style={{ color: '#94a3b8' }}>per arrivare a media 10k</span>
+              </div>
+            </div>
+
+            {/* Details */}
+            <div style={{
+              flex: 1, borderLeft: '1px solid rgba(15,23,42,.07)',
+              paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 11,
+            }}>
+              {[
+                ['Giorni rimasti', `${thisMonth.daysLeft} su ${thisMonth.totalDays}`],
+                ['Passi ancora necessari', comma(thisMonth.stepsNeeded)],
+                ['Target mensile', comma(TARGET * thisMonth.totalDays)],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <div style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Row 2: Record + Streak ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+
+          {/* All-time best day */}
+          <div style={card(140)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <Ph name="trophy" size={13} fill style={{ color: '#f59e0b' }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.07em' }}>Record storico</span>
+            </div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: '#0f172a', lineHeight: 1, letterSpacing: '-.02em' }}>
+              {comma(bestDay.steps)}
+            </div>
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 5, lineHeight: 1.4 }}>
+              {fmtDate(bestDay.date)}
+            </div>
+          </div>
+
+          {/* Streak */}
+          <div style={card(170)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <Ph name="flame" size={13} fill style={{ color: '#ef4444' }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.07em' }}>Streak</span>
+            </div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: '#0f172a', lineHeight: 1, letterSpacing: '-.02em' }}>
+              {curStreak}
+              <span style={{ fontSize: 14, fontWeight: 500, color: '#64748b', marginLeft: 4 }}>giorni</span>
+            </div>
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 5 }}>
+              record: {bestStreak} giorni
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── Last 12 months chart ── */}
+        <div style={{ ...card(200, { padding: '20px' }), marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <Ph name="chart-bar" size={15} style={{ color: '#6366f1' }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>Ultimi 12 mesi</span>
+            <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 'auto' }}>media passi/giorno</span>
+          </div>
+          <BarChart bars={last12.map(x => x.avg)} labels={last12.map(x => x.label)} target={TARGET} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10, flexWrap: 'wrap' }}>
+            {[['#10b981', '≥ 10k'], ['#f59e0b', '7.5k – 10k'], ['#6366f1', '< 7.5k']].map(([c, l]) => (
+              <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: c }} />
+                <span style={{ fontSize: 11, color: '#94a3b8' }}>{l}</span>
+              </div>
+            ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: 'auto' }}>
+              <div style={{ width: 14, height: 1.5, background: '#ef4444', opacity: .6 }} />
+              <span style={{ fontSize: 11, color: '#94a3b8' }}>Target</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Day-of-week chart ── */}
+        <div style={{ ...card(230, { padding: '20px' }), marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <Ph name="clock" size={15} style={{ color: '#6366f1' }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>Media per giorno della settimana</span>
+          </div>
+          <BarChart bars={dowBars} labels={DOW_LABELS} target={TARGET} />
+        </div>
+
+        {/* ── Top months ── */}
+        <div style={{ ...card(260, { padding: '20px' }), marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Ph name="medal" size={15} fill style={{ color: '#f59e0b' }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>Top mesi di sempre</span>
+          </div>
+          {topMonths.map(({ key, label, avg }, i) => {
+            const medals  = ['🥇', '🥈', '🥉', '4°', '5°'];
+            const barW    = (avg / (topMonths[0].avg * 1.1)) * 100;
+            return (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: i < topMonths.length - 1 ? 13 : 0 }}>
+                <span style={{ width: 22, textAlign: 'center', fontSize: i < 3 ? 17 : 13, fontWeight: 700, color: '#94a3b8', flexShrink: 0 }}>
+                  {medals[i]}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#334155', textTransform: 'capitalize' }}>{label}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+                      {comma(avg)}<span style={{ fontWeight: 500, color: '#64748b', fontSize: 11 }}>/gg</span>
+                    </span>
+                  </div>
+                  <div className="pbar" style={{ height: 5 }}>
+                    <div className="pfill" style={{ width: `${barW}%`, background: i === 0 ? '#f59e0b' : '#6366f1' }} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── Top days ── */}
+        <div style={card(290, { padding: '20px' })}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Ph name="lightning" size={15} fill style={{ color: '#f59e0b' }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>Giorni record</span>
+          </div>
+          {topDays.map(({ date, steps }, i) => {
+            const medals = ['🥇', '🥈', '🥉', '4°', '5°'];
+            const barW   = (steps / (topDays[0].steps * 1.05)) * 100;
+            return (
+              <div key={date} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: i < topDays.length - 1 ? 13 : 0 }}>
+                <span style={{ width: 22, textAlign: 'center', fontSize: i < 3 ? 17 : 13, fontWeight: 700, color: '#94a3b8', flexShrink: 0 }}>
+                  {medals[i]}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>{fmtDate(date)}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>{comma(steps)}</span>
+                  </div>
+                  <div className="pbar" style={{ height: 5 }}>
+                    <div className="pfill" style={{ width: `${barW}%`, background: i === 0 ? '#f59e0b' : '#6366f1' }} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [stats,   setStats]   = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState(null);
+
+  const handleXml = useCallback(xmlText => {
+    setLoading(true);
+    setError(null);
+    setTimeout(() => {
+      try {
+        setStats(computeStats(parseHealthXML(xmlText)));
+      } catch (e) {
+        setError(e.message);
+      }
+      setLoading(false);
+    }, 50);
+  }, []);
+
+  const handleDemo = useCallback(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setStats(computeStats(generateDemo()));
+      setLoading(false);
+    }, 300);
+  }, []);
+
+  if (stats) {
+    return <Dashboard stats={stats} onReset={() => { setStats(null); setError(null); }} />;
+  }
+  return <ImportScreen onData={handleXml} onDemo={handleDemo} loading={loading} error={error} />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
