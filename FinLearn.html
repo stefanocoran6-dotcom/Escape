@@ -178,6 +178,26 @@ window.__FL_QUESTIONS = {
     {q:"Un REIT deve distribuire almeno:",opts:["50% del reddito imponibile","90% del reddito imponibile","100% dei cash flow","75% degli utili"],ans:1,exp:"US REITs: distribuzione almeno 90% del reddito imponibile. Pass-through tax = tassazione a livello investitore.",time:25,diff:1},
     {q:"Il total return di una posizione in commodity futures include:",opts:["Solo spot return","Spot return + roll return","Spot return + roll return + collateral return","Solo roll return e collateral return"],ans:2,exp:"Total Return Futures = Spot Return + Roll Return + Collateral Return (rendimento del collaterale, es. T-bill).",time:35,diff:3},
   ],
+  equity:[
+    {q:"In un dealer market, le transazioni avvengono:",opts:["Direttamente tra compratori e venditori","Tramite un dealer che agisce come principal","Attraverso un order book centrale"],ans:1,exp:"Nei dealer market (quote-driven) il dealer compra/vende in proprio conto (principal). Guadagna dallo spread bid-ask.",time:30,diff:1},
+    {q:"Quale tipo di ordine garantisce l'esecuzione ma NON il prezzo?",opts:["Limit order","Market order","Stop order"],ans:1,exp:"Market order: esecuzione immediata al miglior prezzo disponibile. Certezza di esecuzione, incertezza sul prezzo.",time:25,diff:1},
+    {q:"Una posizione short è profittevole quando:",opts:["Il prezzo del titolo sale","Il prezzo del titolo scende","Il dividendo aumenta"],ans:1,exp:"Short selling: prendi a prestito → vendi a P0, riacquisti a P1. Profitto = P0 - P1. Funziona se il prezzo scende.",time:25,diff:1},
+    {q:"Lo spread bid-ask compensa i market maker per:",opts:["Solo il rischio di credito","Rischio di inventario e rischio di adverse selection","Costi di compliance regolamentare"],ans:1,exp:"I market maker affrontano: (1) inventory risk — mantenere posizioni indesiderate, (2) adverse selection — trattare con investitori informati.",time:35,diff:2},
+    {q:"La leva in un margin account con initial margin del 40% è:",opts:["1.0x","2.5x","4.0x"],ans:1,exp:"Leva = 1 / Margin ratio = 1 / 0.40 = 2.5x. Con il 40% di equity controlli 2.5 volte il tuo capitale.",time:30,diff:2},
+    {q:"In un indice price-weighted, le azioni con peso maggiore sono quelle con:",opts:["Market cap più alta","Prezzo azionario più alto","Più azioni in circolazione"],ans:1,exp:"Price-weighted (es. DJIA): peso = prezzo / somma prezzi. Un'azione con prezzo alto pesa di più indipendentemente dalla capitalizzazione.",time:30,diff:1},
+    {q:"Il principale vantaggio di un indice float-adjusted è:",opts:["Semplicità di calcolo","Riflette solo le azioni effettivamente disponibili per il trading","Uguale esposizione a tutti i componenti"],ans:1,exp:"Float-adjusted: i pesi si basano solo sulle azioni liberamente negoziabili. Esclude le quote di insider/governo — meglio riflette l'universo investibile.",time:30,diff:2},
+    {q:"In un mercato efficiente in forma debole (weak-form), quale analisi perde ogni valore?",opts:["Analisi fondamentale","Analisi tecnica","Entrambe"],ans:1,exp:"Weak-form: i prezzi riflettono tutti i dati storici di negoziazione. L'analisi tecnica (pattern, momentum su dati passati) non può generare extra-rendimenti.",time:25,diff:1},
+    {q:"L'efficienza semi-strong implica che:",opts:["Solo l'analisi tecnica è inutile","Sia l'analisi fondamentale che quella tecnica non possono generare alpha sistematicamente","Anche le informazioni insider sono già nei prezzi"],ans:1,exp:"Semi-strong: i prezzi riflettono tutte le informazioni pubblicamente disponibili. Né prezzi passati né notizie pubbliche permettono alpha costante.",time:30,diff:2},
+    {q:"Quale osservazione è evidenza CONTRO l'efficienza di mercato?",opts:["I prezzi seguono un random walk","Una semplice strategia di moving average crossover genera alpha costante","L'impossibilità di fare market timing con il rilascio del PIL"],ans:1,exp:"Se una regola di trading pubblica e semplice genera alpha sistematicamente, è un'anomalia — evidenza contro almeno la semi-strong efficiency.",time:35,diff:2},
+    {q:"Le azioni preferred cumulative richiedono che:",opts:["I dividendi crescano ogni anno","Tutti i dividendi arretrati siano pagati prima dei dividendi common","I dividendi siano indicizzati all'inflazione"],ans:1,exp:"Cumulative preferred: se i dividendi vengono saltati, tutti gli arretrati accumulati devono essere pagati prima di qualsiasi dividendo common.",time:25,diff:1},
+    {q:"Il mercato primario si distingue dal secondario perché:",opts:["Ha volumi più alti","L'emittente raccoglie nuovo capitale vendendo nuovi titoli","Le transazioni avvengono in borsa"],ans:1,exp:"Mercato primario: nuovi titoli emessi, l'azienda riceve i proventi (IPO, SEO). Mercato secondario: investitori si scambiano titoli già esistenti — l'azienda non riceve denaro.",time:20,diff:1},
+    {q:"Un settore ciclico si caratterizza per:",opts:["Domanda stabile indipendentemente dal ciclo economico","Alta correlazione con il PIL e domanda discrezionale","Rendimenti costantemente superiori al mercato"],ans:1,exp:"Settori ciclici (auto, lusso, costruzioni): la domanda amplifica il ciclo economico. Performano meglio nelle espansioni, peggio nelle recessioni.",time:25,diff:1},
+    {q:"Secondo Porter, alta forza contrattuale dei fornitori porta a:",opts:["Maggiore profittabilità del settore","Minore profittabilità del settore","Più barriere all'entrata"],ans:1,exp:"Fornitori forti possono imporre prezzi più alti → comprimono i margini delle aziende del settore → minore profittabilità strutturale.",time:30,diff:2},
+    {q:"Nel Gordon Growth Model, V = D1 / (k - g). Cosa succede se k = g?",opts:["Il valore è uguale a D1","Il valore tende all'infinito","Il valore è zero"],ans:1,exp:"Se k = g, il denominatore è zero → il valore è indefinito / infinito. Il GGM richiede obbligatoriamente k > g.",time:35,diff:2},
+    {q:"Se D1 = 2€, k = 10%, g = 4%, il valore GGM è:",opts:["20 euro","33.33 euro","50 euro"],ans:1,exp:"V = D1 / (k - g) = 2 / (0.10 - 0.04) = 2 / 0.06 = 33.33 euro.",time:35,diff:2},
+    {q:"L'Enterprise Value è neutro rispetto alla struttura del capitale perché:",opts:["Ignora i dividendi","Misura il valore disponibile a TUTTI i finanziatori (debito + equity)","Usa valori contabili e non di mercato"],ans:1,exp:"EV = Market Cap + Debito - Cash. È il prezzo per acquisire l'intera azienda. EV/EBITDA permette confronti tra aziende con diverso leverage.",time:35,diff:2},
+    {q:"Il FCFE (Free Cash Flow to Equity) è:",opts:["Cash disponibile a tutti i finanziatori","Cash disponibile agli azionisti dopo pagamenti sul debito e reinvestimento","Utile netto aggiustato per le voci non monetarie"],ans:1,exp:"FCFE = CFO - Capex + Net Borrowing. Il cash rimasto agli azionisti dopo aver reinvestito e servito il debito. Base del DCF sull'equity.",time:35,diff:3},
+  ],
 };
 
 const QUESTIONS = window.__FL_QUESTIONS;
@@ -430,10 +450,107 @@ window.__FL_TOPICS = {
     },
     questions:(window.__FL_QUESTIONS||{})["derivatives"],
   },
+  equity:{
+    id:'equity', title:'CFA Equity', icon:'📊', color:'#059669', colorLight:'#ecfdf5', time:'4 ore',
+    theory:[
+      {
+        title:"Market Organization and Structure",
+        intro:"I mercati finanziari facilitano il trasferimento di risorse tra chi ha eccesso di capitale e chi ne ha bisogno. Capire come sono organizzati — chi partecipa, come si eseguono gli ordini, dove avvengono le transazioni — è la base di ogni analisi di investimento.",
+        sections:[
+          {heading:"Funzioni dei mercati finanziari", type:'list', items:["Determinazione del prezzo: aggregano informazioni disperse tra migliaia di partecipanti","Allocazione del capitale: dirigono i fondi verso gli usi più produttivi","Gestione del rischio: permettono il trasferimento del rischio tramite derivati","Liquidità: consentono di convertire gli investimenti in cash rapidamente","Informazione: i prezzi di mercato segnalano il valore delle risorse all'economia"]},
+          {heading:"Order-driven vs Quote-driven", type:'table', headers:["Caratteristica","Order-driven","Quote-driven (Dealer)"], rows:[["Meccanismo","Order book centrale con offerte di compratori/venditori","Market maker quota bid e ask in modo continuativo"],["Chi fornisce liquidità","Investitori tra loro (passive orders)","Dealer che agisce come principal"],["Trasparenza prezzi","Alta — il book è visibile","Parziale — solo le quote del dealer"],["Esempi","Borsa Italiana, NYSE automated","Mercato OTC dei bond, forex interbancario"],["Come guadagna chi intermedia","Commissioni di borsa","Spread bid-ask"]]},
+          {heading:"Tipi di ordini fondamentali", type:'highlight', text:"Market Order: esegue IMMEDIATAMENTE al miglior prezzo disponibile. Certezza di esecuzione, incertezza sul prezzo. Usato quando l'urgenza è più importante del prezzo.\n\nLimit Order: esegue SOLO a prezzo uguale o migliore del limite. Certezza sul prezzo, rischio di non esecuzione. Usato quando il prezzo è prioritario.\n\nStop Order: diventa market order quando il prezzo tocca il livello stop. Usato per stop-loss e trailing stop.\n\nStop-Limit: diventa limit order al trigger. Protegge dal gap ma può non eseguire in mercato veloce."},
+          {heading:"Leva e short selling", type:'concept', text:"Margin account — Leva finanziaria:\nLeva = 1 / Initial Margin Ratio\nSe margin = 40% → Leva = 2.5x → controlli 2.5 volte il tuo capitale\n\nMaintenance margin: se l'equity scende sotto questa soglia, scatta la margin call — devi versare altro capitale o liquidare posizioni.\n\nShort selling:\n1. Prendi in prestito le azioni dal broker\n2. Vendi al prezzo corrente P0\n3. Riacquisti a P1 (sperando P1 < P0)\n4. Profitto = P0 − P1 − costi di prestito\n\nRischio del short: illimitato in teoria (il prezzo può salire senza limite). Il long perde al massimo il capitale investito."},
+        ]
+      },
+      {
+        title:"Security Market Indexes",
+        intro:"Un indice di mercato aggrega i prezzi di più titoli in una singola misura di performance. La metodologia di costruzione — soprattutto il sistema di ponderazione — determina le sue proprietà e i suoi utilizzi.",
+        sections:[
+          {heading:"Metodi di ponderazione a confronto", type:'table', headers:["Metodo","Peso di ciascun titolo","Pro","Contro"], rows:[["Price-weighted (DJIA)","Prezzo / somma prezzi","Semplice, storico","Stock split distorce i pesi; ignora la capitalizzazione"],["Market-cap weighted (S&P500, MSCI)","MC / MC totale","Riflette il mercato reale; self-adjusting","Sovrappeso sui mega-cap; momentum bias"],["Float-adjusted MC","Free float / totale free float","Solo azioni negoziabili; realistico","Richiede dati aggiornati sul free float"],["Equal-weighted","1/N per ogni titolo","Nessun bias dimensionale; tilt value/small-cap","Ribilanciamento frequente e costoso"],["Fundamental-weighted","Fattuali (EPS, BV, fatturato)","Tilt value sistematico; less momentum bias","Deviazione consapevole dal mercato"]]},
+          {heading:"Ribilanciamento e ricostituzione", type:'concept', text:"Ribilanciamento: ripristino dei pesi target dopo che i prezzi si sono mossi.\n• Equal-weighted: ribilanciamento frequente (trimestrale o mensile)\n• Price-weighted: solo per stock split (si aggiusta il divisore)\n• Value-weighted: self-adjusting, nessun ribilanciamento necessario\n\nRicostituzione: revisione periodica dei componenti.\n• S&P 500: trimestrale, basato su market cap, liquidità, redditività\n• Aggiunta/rimozione di un titolo crea pressione temporanea sul prezzo (index effect)"},
+          {heading:"Utilizzi degli indici", type:'list', items:["Benchmark di performance: l'alfa è la sovra/sotto-performance vs l'indice di riferimento del manager","Proxy del mercato nel CAPM: l'indice rappresenta il portafoglio di mercato teorico","Veicolo d'investimento passivo: ETF e index fund replicano l'indice a bassi costi","Indicatore economico e di sentiment: le tendenze degli indici segnalano l'economia","Base per derivati: futures su indici (S&P 500 futures, EuroStoxx 50)","Ricerca e analisi: confronto cross-settoriale e cross-country"]},
+        ]
+      },
+      {
+        title:"Market Efficiency",
+        intro:"Un mercato efficiente è quello in cui i prezzi riflettono pienamente e istantaneamente tutte le informazioni disponibili. L'Efficient Market Hypothesis (EMH) ha tre forme crescenti d'intensità — con implicazioni radicalmente diverse per la gestione attiva.",
+        sections:[
+          {heading:"Le 3 forme di efficienza EMH", type:'table', headers:["Forma","Informazioni nel prezzo","Cosa NON funziona","Test empirici"], rows:[["Weak-form","Tutti i prezzi e volumi passati","Analisi tecnica basata su dati storici","Test di autocorrelazione, run test"],["Semi-strong","Tutto il pubblico disponibile (bilanci, news, macro)","Analisi fondamentale da info pubbliche","Event study su annunci earnings/M&A"],["Strong-form","Anche informazioni private (insider)","Insider trading per extra-rendimenti","Performance di corporate insider, analyst performance"]]},
+          {heading:"Anomalie e sfide all'EMH", type:'list', items:["Value effect: titoli a basso P/B o P/E storicamente sovraperformano (Fama-French 1992)","Momentum effect: i titoli che hanno performato bene continuano a farlo nei 3-12 mesi successivi","Small-cap premium: le small cap generano più rendimento aggiustato per il rischio","Post-earnings announcement drift: i prezzi si aggiustano lentamente dopo gli earnings (evidenza contro semi-strong)","Calendar effects: January effect, weekend effect (effetti piccoli ma documentati)"]},
+          {heading:"Implicazioni per gli investitori", type:'highlight', text:"Se EMH è vera (anche solo semi-strong):\n• Stock picking e market timing non aggiungono valore sistematicamente\n• La gestione passiva (index fund/ETF) batte la gestione attiva al netto dei costi nel lungo periodo\n• L'unico modo per battere il mercato è avere un vantaggio informativo PERSISTENTE e non replicabile\n\nIl dibattito è aperto: molti studi confermano che la maggioranza degli active manager non batte il benchmark al netto di costi e commissioni su orizzonti lunghi. Le anomalie potrebbero riflettere rischi non misurati, non vera inefficienza."},
+        ]
+      },
+      {
+        title:"Overview of Equity Securities",
+        intro:"I titoli azionari rappresentano diritti di proprietà residual su un'impresa. L'azionista ha diritto a ciò che rimane dopo che tutti gli altri creditori sono stati pagati — il che significa upside illimitato e rischio di perdita totale.",
+        sections:[
+          {heading:"Common vs Preferred equity", type:'table', headers:["Caratteristica","Common Equity","Preferred Equity"], rows:[["Dividendo","Variabile, discrezionale","Fisso (o formula predefinita)"],["Priorità nel fallimento","Ultima (residual claim)","Prima del common, dopo il debito"],["Diritto di voto","Sì — 1 azione = 1 voto (tipicamente)","Generalmente no"],["Upside","Illimitato","Limitato al dividendo"],["Variante Cumulative","—","Dividendi arretrati accumulati prima del common"],["Variante Convertible","—","Conversione in azioni common a ratio prestabilito"],["Variante Callable","—","Emittente può rimborsare (call at par o premium)"]]},
+          {heading:"Mercato primario vs secondario", type:'concept', text:"Mercato primario: l'azienda emette NUOVI titoli e raccoglie nuovo capitale.\n• IPO: prima quotazione su un mercato pubblico\n• Seasoned Equity Offering (SEO): nuova emissione di azioni già quotate\n• Private placement: vendita diretta a investitori qualificati (no prospetto pubblico)\n• Direct listing: quotazione senza raccolta di nuovo capitale (solo secondary)\n\nMercato secondario: gli investitori si scambiano titoli già emessi. L'azienda NON riceve denaro. La liquidità del secondario è fondamentale: abbassa il costo del capitale perché gli investitori sanno di poter uscire."},
+          {heading:"Rendimento e rischio dell'equity", type:'list', items:["Total Return = (P1 - P0 + Dividendi) / P0","Dividend Yield = Dividendo annuo / Prezzo corrente","Capital Gain Yield = (P1 - P0) / P0","Equity Risk Premium = E(R_equity) - R_f (tipicamente 4-6% storicamente)","Rischio sistematico (β): correlato al mercato, NON eliminabile con diversificazione, COMPENSATO","Rischio specifico (idiosincratico): eliminabile con diversificazione, NON compensato dal mercato (CAPM)"]},
+        ]
+      },
+      {
+        title:"Industry and Company Analysis",
+        intro:"Nessuna azienda opera nel vuoto. L'analisi settoriale inquadra le forze strutturali che determinano la profittabilità di lungo periodo di un intero comparto prima ancora di guardare ai numeri di una singola impresa.",
+        sections:[
+          {heading:"Sensitività al ciclo economico", type:'table', headers:["Tipo","Caratteristica","Esempi"], rows:[["Cyclical","Domanda amplifica il ciclo; alto beta economico","Auto, lusso, costruzioni, materie prime industriali"],["Non-cyclical (Defensive)","Domanda stabile a prescindere dal ciclo","Alimentari, utility, farmaceutica, tabacco"],["Growth","Crescita superiore all'economia per ragioni strutturali","Tech, biotech, cloud computing"],["Counter-cyclical","Performa meglio in recessione","Catene discount, servizi di recupero crediti"]]},
+          {heading:"Porter's Five Forces", type:'concept', text:"Le cinque forze determinano la profittabilità strutturale di un settore:\n\n1. Rivalry among existing competitors: alta intensità → guerra dei prezzi → margini compressi\n2. Threat of new entrants: barriere alte (scale, brand, brevetti, regulation) → i player esistenti proteggono i margini\n3. Threat of substitutes: prodotti alternativi limitano il pricing power — se alzi il prezzo, i clienti cambiano\n4. Bargaining power of buyers: clienti forti (concentrati, switching cost basso) → impongono sconti\n5. Bargaining power of suppliers: fornitori essenziali o concentrati → alzano i costi di input\n\nPiù forze sono deboli, più il settore è profittevole e difendibile."},
+          {heading:"Industry life cycle", type:'highlight', text:"Embryonic: alta crescita ma incerta, molti entranti, nessuno standard, alto rischio/rendimento\n\nGrowth: accelerazione, economie di scala emergenti, consolidamento iniziale, margini in espansione\n\nShakeout: crescita rallenta, concorrenza intensa, i deboli escono, margini si comprimono\n\nMature: crescita = PIL, oligopolio stabile, focus su efficienza e ritorno del capitale (dividendi, buyback)\n\nDecline: volumi calano per tecnologia obsoleta o cambi demografici, disinvestimento e M&A difensivo"},
+          {heading:"Analisi aziendale: framework", type:'list', items:["Competitive advantage (moat): brand, low cost producer, network effect, switching cost, brevetti","Management quality: track record allocazione capitale, incentivi allineati con shareholders","Financial health: leverage, copertura interessi, qualità cash flow, ROIC vs WACC","Crescita: organica vs M&A, reinvestimento sostenibile, reinvestment rate × ROIC","ESG: rischi regolatori, governance (board independence, pay-for-performance), sostenibilità modello"]},
+        ]
+      },
+      {
+        title:"Equity Valuation: Modelli e Multipli",
+        intro:"Determinare il valore intrinseco di un'azione richiede stime su cash flow futuri, crescita e rischio. I modelli assoluti (DCF, DDM) forniscono un valore diretto; i modelli relativi (multipli) confrontano l'azienda con i peer. Un analista completo usa entrambi e riconcilia le stime.",
+        sections:[
+          {heading:"Gordon Growth Model (GGM)", type:'highlight', text:"V₀ = D₁ / (k_e − g)\n\nD₁ = dividendo atteso tra 1 anno = D₀ × (1+g)\nk_e = required return on equity (dal CAPM)\ng = tasso di crescita COSTANTE e PERPETUO\n\nCondizione OBBLIGATORIA: k_e > g (altrimenti denominatore negativo o zero)\n\nEsempio: D₀=3€, g=4%, k=10% → D₁=3.12€ → V = 3.12 / 0.06 = 52 euro\n\nAdatto per: utility, REIT, banche mature con dividendo stabile e prevedibile\nLimitazione: la crescita costante perpetua è irrealistica per la maggior parte delle aziende"},
+          {heading:"Multipli di mercato a confronto", type:'table', headers:["Multiplo","Formula","Punti di forza","Limiti"], rows:[["P/E","Price / EPS","Intuitivo, il più usato","Distorto da leva e politiche contabili"],["P/B","Price / Book Value per share","Utile per finanziari e asset-heavy","Book value può essere obsoleto o distorto"],["P/S","Price / Revenue per share","Usabile anche con EPS negativo","Ignora completamente la profittabilità"],["EV/EBITDA","(MC+Debt-Cash) / EBITDA","Capital-structure neutral; confronta aziende con diversa leva","Ignora capex e working capital needs"],["PEG","P/E / crescita EPS attesa","Aggiusta il P/E per la crescita","Sensibile alle stime di crescita; non lineare"]]},
+          {heading:"Free Cash Flow: FCFF e FCFE", type:'concept', text:"FCFF (Free Cash Flow to the Firm): disponibile a TUTTI i finanziatori.\nFCFF = EBIT × (1−t) + D&A − ΔNWC − Capex\nValore Firma = FCFF₁ / (WACC − g)   → poi sottrai il debito per l'equity value\n\nFCFE (Free Cash Flow to Equity): disponibile agli azionisti DOPO il servizio del debito.\nFCFE = CFO − Capex + Net Borrowing\nValore Equity = FCFE₁ / (k_e − g)\n\nVantaggio vs DDM: funziona anche per aziende che non distribuiscono dividendi ma generano free cash flow (es. Berkshire Hathaway, Amazon storica)."},
+          {heading:"Residual Income e confronto approcci", type:'list', items:["Residual Income = Net Income − (k_e × Book Equity)","Misura l'extra-rendimento rispetto al costo del capitale","V = B₀ + PV(RI futuri) — Utile quando dividendi e FCF non sono affidabili","La coerenza richiede che tutti i modelli convergano sullo stesso valore se le assunzioni sono consistenti","In pratica: DDM per yield stocks; FCFE/FCFF per growth; multipli per quick comps; tutti e tre per cross-check"]},
+        ]
+      },
+    ],
+    cards:[
+      {front:"Gordon Growth Model",back:"Valore di un'azione con crescita costante e perpetua dei dividendi.",formula:"V_0 = \\frac{D_1}{k_e - g}",mnemonic:"k_e > g sempre! Denominatore negativo = modello inapplicabile"},
+      {front:"Enterprise Value (EV)",back:"Valore dell'intera azienda per tutti i finanziatori. Neutro rispetto alla struttura del capitale.",formula:"EV = MC + \\text{Debt} - \\text{Cash}",mnemonic:"EV/EBITDA confronta aziende con diverso leverage"},
+      {front:"FCFE",back:"Cash disponibile agli azionisti dopo reinvestimento e servizio del debito.",formula:"FCFE = CFO - Capex + \\text{Net Borrowing}",mnemonic:"Quello che rimane all'equity dopo tutto"},
+      {front:"Porter's Five Forces",back:"5 forze che determinano la profittabilità strutturale del settore: rivalry, new entrants, substitutes, buyer power, supplier power.",formula:"\\pi \\propto \\frac{1}{\\text{Intensità forze competitive}}",mnemonic:"Più forze deboli = settore più profittevole"},
+      {front:"P/E vs PEG",back:"P/E = prezzo per 1€ di utili. PEG aggiusta per la crescita. PEG < 1 = potenzialmente cheap.",formula:"PEG = \\frac{P/E}{g_{EPS}}",mnemonic:"Stesso P/E, crescita doppia = metà valore PEG"},
+      {front:"Forme di EMH",back:"Weak: dati storici. Semi-strong: info pubbliche. Strong: anche info private.",formula:"P = f(\\Omega_{\\text{info}})",mnemonic:"Ogni livello include il precedente; strong form quasi mai verificata"},
+      {front:"Market vs Limit Order",back:"Market: esecuzione certa, prezzo incerto. Limit: prezzo certo, esecuzione incerta.",formula:"\\text{Trade-off: velocità vs prezzo}",mnemonic:"Market = urgenza; Limit = pazienza"},
+      {front:"Leva in margin account",back:"Amplifica guadagni E perdite. Initial margin minimo per aprire. Maintenance margin: soglia per margin call.",formula:"\\text{Leva} = \\frac{1}{\\text{Initial Margin Ratio}}",mnemonic:"40% margin = 2.5x leva"},
+    ],
+    formulas:{
+      "Valutazione DDM / GGM":[
+        {name:"Gordon Growth Model",formula:"V_0 = \\frac{D_1}{k_e - g}",desc:"Crescita costante perpetua (k_e > g)"},
+        {name:"D1 da D0",formula:"D_1 = D_0 \\times (1 + g)",desc:"Dividendo atteso anno prossimo"},
+        {name:"Justified P/E (GGM)",formula:"P/E^* = \\frac{1 - b}{k_e - g}",desc:"b = retention ratio; 1-b = payout"},
+      ],
+      "Free Cash Flow":[
+        {name:"FCFF",formula:"FCFF = EBIT(1-t) + D\\&A - \\Delta NWC - Capex",desc:"Free CF alla firma"},
+        {name:"FCFE",formula:"FCFE = CFO - Capex + \\text{Net Borrowing}",desc:"Free CF all'equity"},
+        {name:"EV da FCFF",formula:"EV = \\frac{FCFF_1}{WACC - g}",desc:"Crescita perpetua"},
+        {name:"Equity Value da FCFE",formula:"V_E = \\frac{FCFE_1}{k_e - g}",desc:"Crescita perpetua"},
+      ],
+      "Multipli":[
+        {name:"EV",formula:"EV = MC + \\text{Debt} - \\text{Cash}",desc:"Enterprise value"},
+        {name:"PEG",formula:"PEG = \\frac{P/E}{g_{EPS}}",desc:"P/E aggiustato per crescita"},
+        {name:"P/B",formula:"P/B = \\frac{\\text{Price}}{\\text{Book Value per share}}",desc:"Premium sull'equity contabile"},
+      ],
+      "Rendimento Equity":[
+        {name:"Total Return",formula:"R = \\frac{P_1 - P_0 + Div}{P_0}",desc:"Capital gain + dividendo"},
+        {name:"Residual Income",formula:"RI_t = NI_t - k_e \\cdot B_{t-1}",desc:"Extra-return sull'equity"},
+        {name:"Leva margin",formula:"\\text{Leva} = \\frac{1}{\\text{Margin Ratio}}",desc:"Amplificazione posizione"},
+      ],
+    },
+    questions:(window.__FL_QUESTIONS||{})["equity"],
+  },
 };
 
 window.__FL_LESSONS = [
   {id:1, name:'Obbligazioni',     icon:'📊', topicKey:'bonds',       gradient:'linear-gradient(135deg,#f59e0b,#d97706)'},
+  {id:6, name:'CFA Equity',       icon:'📈', topicKey:'equity',      gradient:'linear-gradient(135deg,#059669,#047857)'},
   {id:2, name:'Azioni',           icon:'📈', topicKey:'stocks',      gradient:'linear-gradient(135deg,#10b981,#059669)'},
   {id:3, name:'CFA Fixed Income', icon:'🎓', topicKey:'cfa_fi',      gradient:'linear-gradient(135deg,#8b5cf6,#6d28d9)'},
   {id:4, name:'Derivati',         icon:'⚡', topicKey:'derivatives', gradient:'linear-gradient(135deg,#ef4444,#dc2626)'},
